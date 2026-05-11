@@ -1,289 +1,15 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-
-// ─── Atom Components ────────────────────────────────────────────────────────
-
-function Eyebrow({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
-  return <p className="eyebrow" style={style}>{children}</p>
-}
-
-function Arrow() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden>
-      <path d="M1 11L11 1M11 1H3M11 1V9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-    </svg>
-  )
-}
-
-function Plus({ open }: { open: boolean }) {
-  return (
-    <svg
-      width="14" height="14" viewBox="0 0 14 14" fill="none"
-      className={`faq-icon${open ? ' open' : ''}`}
-      aria-hidden
-    >
-      <path d="M7 1V13M1 7H13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-    </svg>
-  )
-}
-
-function SunMark({ size = 32 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 32 32" fill="none" aria-hidden>
-      <circle cx="16" cy="16" r="6" fill="var(--ochre)" />
-      <circle cx="16" cy="16" r="10" stroke="var(--ochre)" strokeWidth="1.5" strokeOpacity="0.5" />
-      <circle cx="16" cy="16" r="14" stroke="var(--ochre)" strokeWidth="1" strokeOpacity="0.25" />
-    </svg>
-  )
-}
-
-function ImgPh({
-  src,
-  alt,
-  tag,
-  className = '',
-  style = {},
-}: {
-  src?: string
-  alt?: string
-  tag?: string
-  className?: string
-  style?: React.CSSProperties
-}) {
-  return (
-    <div className={`img-ph ${className}`} style={style}>
-      {src ? (
-        <img src={src} alt={alt || ''} loading="lazy" />
-      ) : (
-        <div
-          style={{
-            width: '100%',
-            height: '100%',
-            background: `repeating-linear-gradient(
-              45deg,
-              var(--bg-deep),
-              var(--bg-deep) 4px,
-              var(--bg-warm) 4px,
-              var(--bg-warm) 10px
-            )`,
-          }}
-        />
-      )}
-      {tag && <span className="img-ph-tag">{tag}</span>}
-    </div>
-  )
-}
-
-function Reveal({
-  children,
-  delay = 0,
-  className = '',
-  style = {},
-}: {
-  children: React.ReactNode
-  delay?: number
-  className?: string
-  style?: React.CSSProperties
-}) {
-  const ref = useRef<HTMLDivElement>(null)
-  const [visible, setVisible] = useState(false)
-
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const obs = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) { setVisible(true); obs.disconnect() } },
-      { threshold: 0.12 }
-    )
-    obs.observe(el)
-    return () => obs.disconnect()
-  }, [])
-
-  return (
-    <div
-      ref={ref}
-      className={`reveal${visible ? ' visible' : ''} ${className}`}
-      style={{ transitionDelay: `${delay}ms`, ...style }}
-    >
-      {children}
-    </div>
-  )
-}
-
-function Counter({
-  target,
-  suffix = '',
-  duration = 1800,
-}: {
-  target: number
-  suffix?: string
-  duration?: number
-}) {
-  const [count, setCount] = useState(0)
-  const [started, setStarted] = useState(false)
-  const ref = useRef<HTMLSpanElement>(null)
-
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const obs = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) { setStarted(true); obs.disconnect() } },
-      { threshold: 0.2 }
-    )
-    obs.observe(el)
-    return () => obs.disconnect()
-  }, [])
-
-  useEffect(() => {
-    if (!started) return
-    let frame: number
-    const start = performance.now()
-    const animate = (now: number) => {
-      const t = Math.min((now - start) / duration, 1)
-      const ease = 1 - Math.pow(1 - t, 3)
-      setCount(Math.round(ease * target))
-      if (t < 1) frame = requestAnimationFrame(animate)
-    }
-    frame = requestAnimationFrame(animate)
-    return () => cancelAnimationFrame(frame)
-  }, [started, target, duration])
-
-  return <span ref={ref}>{count.toLocaleString('en-IN')}{suffix}</span>
-}
-
-// ─── Nav ────────────────────────────────────────────────────────────────────
-
-function Nav() {
-  const [scrolled, setScrolled] = useState(false)
-  const [menuOpen, setMenuOpen] = useState(false)
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40)
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
-
-  return (
-    <header
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 100,
-        padding: scrolled ? '12px 0' : '20px 0',
-        background: scrolled
-          ? 'color-mix(in oklch, var(--bg) 88%, transparent)'
-          : 'transparent',
-        backdropFilter: scrolled ? 'blur(14px)' : 'none',
-        borderBottom: scrolled ? '1px solid var(--rule)' : '1px solid transparent',
-        transition: 'padding 0.3s, background 0.3s, border-color 0.3s, backdrop-filter 0.3s',
-      }}
-    >
-      <div className="container-site" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        {/* Logo */}
-        <a href="#" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-          <div style={{
-            width: 28, height: 28, borderRadius: '50%',
-            background: 'var(--ochre)',
-            flexShrink: 0,
-          }} />
-          <span style={{ fontFamily: 'IBM Plex Mono', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--ink)', fontWeight: 500 }}>
-            Garv Urja Solar
-          </span>
-        </a>
-
-        {/* Desktop nav links */}
-        <nav style={{ display: 'flex', alignItems: 'center', gap: 32 }} className="hidden md:flex">
-          {['About', 'Services', 'Projects', 'Calculator', 'Contact'].map((item) => (
-            <a
-              key={item}
-              href={`#${item.toLowerCase()}`}
-              style={{
-                fontFamily: 'IBM Plex Mono',
-                fontSize: 11,
-                letterSpacing: '0.14em',
-                textTransform: 'uppercase',
-                color: 'var(--ink-soft)',
-                textDecoration: 'none',
-                transition: 'color 0.2s',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.color = 'var(--ink)')}
-              onMouseLeave={e => (e.currentTarget.style.color = 'var(--ink-soft)')}
-            >
-              {item}
-            </a>
-          ))}
-          <a href="#contact" className="btn btn-primary" style={{ padding: '10px 18px' }}>
-            Get a Quote
-          </a>
-        </nav>
-
-        {/* Mobile hamburger */}
-        <button
-          className="md:hidden"
-          onClick={() => setMenuOpen(!menuOpen)}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink)', padding: 4 }}
-          aria-label="Toggle menu"
-        >
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-            {menuOpen ? (
-              <path d="M4 4L18 18M18 4L4 18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-            ) : (
-              <>
-                <path d="M3 7H19" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                <path d="M3 12H19" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                <path d="M3 17H13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-              </>
-            )}
-          </svg>
-        </button>
-      </div>
-
-      {/* Mobile menu */}
-      {menuOpen && (
-        <div style={{
-          background: 'var(--bg)',
-          borderTop: '1px solid var(--rule)',
-          padding: '20px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 16,
-        }}>
-          {['About', 'Services', 'Projects', 'Calculator', 'Contact'].map((item) => (
-            <a
-              key={item}
-              href={`#${item.toLowerCase()}`}
-              onClick={() => setMenuOpen(false)}
-              style={{
-                fontFamily: 'IBM Plex Mono',
-                fontSize: 12,
-                letterSpacing: '0.14em',
-                textTransform: 'uppercase',
-                color: 'var(--ink)',
-                textDecoration: 'none',
-              }}
-            >
-              {item}
-            </a>
-          ))}
-          <a href="#contact" className="btn btn-primary" style={{ alignSelf: 'flex-start' }}>
-            Get a Quote
-          </a>
-        </div>
-      )}
-    </header>
-  )
-}
+import { useState } from 'react'
+import { Eyebrow, Arrow, Plus, SunMark, ImgPh, Reveal, Counter, Nav, Footer } from './_shared'
 
 // ─── Hero ────────────────────────────────────────────────────────────────────
 
 const HERO_METRICS = [
-  { value: 200, suffix: '+', label: 'MW Commissioned' },
-  { value: 1400, suffix: '+', label: 'Installations' },
-  { value: 13, suffix: ' yrs', label: 'In Operation' },
-  { value: 98, suffix: '%', label: 'Uptime SLA' },
+  { value: 1000, suffix: '+', label: 'kW Commissioned' },
+  { value: 100, suffix: '+', label: 'Installations' },
+  { value: 50000, suffix: '', label: 'Tonnes CO₂ Avoided' },
+  { value: 10, suffix: 'Cr+', label: 'Client Savings ₹' },
 ]
 
 function HeroBlob({ color, style }: { color: string; style: React.CSSProperties }) {
@@ -415,13 +141,13 @@ function Hero() {
           className="max-md:grid-cols-1">
           {/* Left: headline */}
           <div style={{ animation: 'fade-in 0.8s ease both', animationDelay: '0.1s' }}>
-            <Eyebrow>Est. 2011 · Anand, Gujarat</Eyebrow>
+            <Eyebrow>MNRE Registered · Serving All of India</Eyebrow>
             <h1 className="h-display" style={{ marginTop: 20, marginBottom: 24 }}>
               Power your world<br />
               <em style={{ color: 'var(--ochre)' }}>with the sun.</em>
             </h1>
             <p className="lede" style={{ maxWidth: 460, marginBottom: 36 }}>
-              Garv Urja Solar designs, installs and maintains rooftop and ground-mount solar systems for homes, industries and utilities across Gujarat and beyond.
+              Garv Urja Solutions designs, installs and maintains rooftop and ground-mount solar systems for homes, industries and utilities across India.
             </p>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
               <a href="#calculator" className="btn btn-primary btn-arrow">Calculate Savings</a>
@@ -458,7 +184,7 @@ function Hero() {
                 position: 'absolute', bottom: 12, left: 12,
                 fontFamily: 'IBM Plex Mono', fontSize: 10, letterSpacing: '0.14em',
                 textTransform: 'uppercase', color: 'rgba(255,255,255,0.85)',
-              }}>Gujarat residential install</span>
+              }}>Solar across India</span>
             </div>
 
             {/* Metrics grid */}
@@ -540,35 +266,29 @@ function About() {
   return (
     <section id="about" className="section-pad" style={{ background: 'var(--bg)' }}>
       <div className="container-site">
-        <div className="section-head">
+        {/* 2-col: left = heading + image, right = text + numbered pillars */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'clamp(32px, 5vw, 72px)', alignItems: 'start' }} className="max-md:grid-cols-1">
+          {/* Left column */}
           <Reveal>
             <Eyebrow>Our Story</Eyebrow>
-            <h2 className="h-section" style={{ marginTop: 16 }}>
-              Gujarat's solar pioneers since 2011.
+            <h2 className="h-section" style={{ marginTop: 16, marginBottom: 28 }}>
+              Solar pioneers
             </h2>
-          </Reveal>
-          <Reveal delay={100}>
-            <p className="lede">
-              Founded as Jangid Solar and reborn as Garv Urja Solar, we've spent over thirteen years turning rooftops and barren land into clean power generators. From a modest workshop in Anand to a full-service EPC company, every project has been a step toward a fossil-free Gujarat.
-            </p>
-            <div style={{ marginTop: 28 }}>
-              <a href="#contact" className="btn btn-ghost btn-arrow">Work With Us</a>
-            </div>
-          </Reveal>
-        </div>
-
-        {/* Editorial 2-column */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 40, alignItems: 'center' }} className="max-md:grid-cols-1">
-          <Reveal>
             <ImgPh
               src="/images/about-home-solar.jpg.png"
               alt="Family on balcony with rooftop solar panels at sunset"
-              tag="Anand, Gujarat"
+              tag="Solar for India"
               style={{ aspectRatio: '4/3', borderRadius: 16 }}
             />
           </Reveal>
-          <Reveal delay={120}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+
+          {/* Right column */}
+          <Reveal delay={100}>
+            <p className="lede" style={{ marginBottom: 32 }}>
+              At Garv Urja Solutions, we transform rooftops and open spaces into clean, reliable energy through end-to-end solar EPC solutions. From residential to commercial projects, our mission is to deliver sustainable, affordable, and future-ready solar power with a strong focus on quality, reliability, and environmental responsibility.
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24, marginBottom: 32 }}>
               {[
                 {
                   num: '01',
@@ -577,7 +297,7 @@ function About() {
                 },
                 {
                   num: '02',
-                  title: 'ISO 9001:2015 Certified',
+                  title: 'MNRE Registered Vendor',
                   body: "Quality management isn't a checkbox for us; it's the backbone of every installation, from wiring harness to inverter selection.",
                 },
                 {
@@ -586,7 +306,7 @@ function About() {
                   body: 'Our O&M contracts keep your system running at peak yield for 25 years, with remote monitoring and rapid-response field teams.',
                 },
               ].map(({ num, title, body }) => (
-                <div key={num} style={{ display: 'flex', gap: 20, paddingBottom: 28, borderBottom: '1px solid var(--rule)' }}>
+                <div key={num} style={{ display: 'flex', gap: 20, paddingBottom: 24, borderBottom: '1px solid var(--rule)' }}>
                   <span style={{ fontFamily: 'IBM Plex Mono', fontSize: 11, color: 'var(--ink-mute)', letterSpacing: '0.1em', paddingTop: 3, flexShrink: 0 }}>{num}</span>
                   <div>
                     <h3 style={{ fontFamily: 'Newsreader', fontSize: 20, marginBottom: 8 }}>{title}</h3>
@@ -595,6 +315,8 @@ function About() {
                 </div>
               ))}
             </div>
+
+            <a href="#contact" className="btn btn-ghost btn-arrow">Work With Us</a>
           </Reveal>
         </div>
       </div>
@@ -612,7 +334,7 @@ const SERVICES = [
     body: 'From a 3 kW home system to a 500 kW MSME rooftop, we design grid-tied and hybrid systems that maximise subsidy capture and minimise payback periods.',
     bullets: ['PM Surya Ghar subsidy assistance', 'On-grid, off-grid & hybrid options', 'Shadow-free layout with string optimisers', 'Bi-facial module options for high yield'],
     img: '/images/services-rooftop-happy-family.png',
-    imgTag: 'Residential install, Vadodara',
+    imgTag: 'Residential install',
   },
   {
     id: 'ground',
@@ -621,7 +343,7 @@ const SERVICES = [
     body: 'For industries, municipalities and farmers looking to utilise open land, we deliver MW-scale ground-mounted plants with full DC/AC engineering and grid-synchronisation.',
     bullets: ['1 kW to multi-MW turnkey projects', 'Agri-solar (agrivoltaic) designs', 'Screw piles or concrete foundations', 'SCADA & remote monitoring'],
     img: 'https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=900&q=80&auto=format&fit=crop',
-    imgTag: 'Ground-mount array, Anand',
+    imgTag: 'Ground-mount utility array',
   },
   {
     id: 'epc',
@@ -630,7 +352,7 @@ const SERVICES = [
     body: 'We act as the single contract EPC partner for C&I clients — handling procurement, civil, electrical, net-metering, and commissioning under one roof.',
     bullets: ['Single contract accountability', 'Detailed energy yield simulation', 'Net-metering & banking advisory', 'DPR preparation & bank funding support'],
     img: '/images/services-epc.png',
-    imgTag: 'Industrial EPC, GIDC Anand',
+    imgTag: 'Industrial EPC, India',
   },
   {
     id: 'om',
@@ -639,7 +361,7 @@ const SERVICES = [
     body: 'A solar plant is a 25-year asset. Our AMC and O&M contracts protect that asset with regular audits, cleaning schedules, inverter servicing and remote performance monitoring.',
     bullets: ['Annual & comprehensive AMC plans', 'Remote SCADA performance alerts', 'Panel cleaning & thermography', 'Rapid response within 24 hours'],
     img: 'https://images.unsplash.com/photo-1591105327764-d20bbf65a25c?w=900&q=80&auto=format&fit=crop',
-    imgTag: 'O&M inspection, Gujarat',
+    imgTag: 'O&M inspection',
   },
 ]
 
@@ -778,7 +500,7 @@ function Calculator() {
           </Reveal>
           <Reveal delay={100}>
             <p style={{ fontSize: 'clamp(15px, 1.2vw, 18px)', lineHeight: 1.6, color: 'color-mix(in oklch, var(--bg) 70%, transparent)', marginBottom: 0 }}>
-              Enter your average monthly electricity consumption and we'll estimate the system size, savings and payback period for your location in Gujarat.
+              Enter your average monthly electricity consumption and we'll estimate the system size, savings and payback period.
             </p>
           </Reveal>
         </div>
@@ -879,7 +601,7 @@ function Calculator() {
               ))}
             </div>
             <p style={{ marginTop: 14, fontSize: 12, color: 'color-mix(in oklch, var(--bg) 38%, transparent)', lineHeight: 1.5 }}>
-              * Estimates based on Gujarat solar irradiation (5.2 kWh/m²/day) and current DISCOM tariff rates. Actual savings may vary.
+              * Estimates based on average Indian solar irradiation (5.0–5.5 kWh/m²/day) and typical DISCOM tariff rates. Actual savings vary by state and consumption pattern.
             </p>
             <div style={{ marginTop: 20 }}>
               <a href="#contact" className="btn" style={{ background: 'var(--ochre)', color: 'var(--bg)', borderColor: 'var(--ochre)' }}>
@@ -897,36 +619,36 @@ function Calculator() {
 
 const PROJECTS = [
   {
-    title: 'Cold Storage Solar, Anand',
+    title: 'Industrial Rooftop, Pune',
     size: '120 kWp',
-    type: 'Ground-Mount',
+    type: 'Rooftop EPC',
     year: '2024',
     img: '/images/project-industrial.png',
-    tag: 'Anand, Gujarat',
+    tag: 'Pune, Maharashtra',
   },
   {
-    title: 'Industrial Rooftop, Vadodara',
+    title: 'Commercial Complex, Hyderabad',
     size: '250 kWp',
     type: 'Rooftop EPC',
     year: '2023',
     img: 'https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=900&q=80&auto=format&fit=crop',
-    tag: 'Vadodara, Gujarat',
+    tag: 'Hyderabad, Telangana',
   },
   {
-    title: 'Residential Complex, Surat',
+    title: 'Residential Society, Indore',
     size: '60 kWp',
     type: 'Rooftop',
     year: '2024',
     img: 'https://images.unsplash.com/photo-1559302504-64aae6ca6b6d?w=900&q=80&auto=format&fit=crop',
-    tag: 'Surat, Gujarat',
+    tag: 'Indore, Madhya Pradesh',
   },
   {
-    title: 'Agri-Solar Farm, Mehsana',
+    title: 'Agri-Solar Farm, Gujarat',
     size: '500 kWp',
     type: 'Ground-Mount',
     year: '2023',
     img: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=900&q=80&auto=format&fit=crop',
-    tag: 'Mehsana, Gujarat',
+    tag: 'Ahmedabad, Gujarat',
   },
 ]
 
@@ -943,7 +665,7 @@ function Projects() {
           </Reveal>
           <Reveal delay={100}>
             <p className="lede">
-              Over 1,400 installations across residential, commercial, industrial and agricultural segments — here's a selection.
+              Multiple installations across residential, commercial, industrial and agricultural segments — here's a selection.
             </p>
             <div style={{ marginTop: 24 }}>
               <a href="#contact" className="btn btn-ghost btn-arrow">View All Projects</a>
@@ -976,10 +698,10 @@ function Projects() {
 // ─── Impact ───────────────────────────────────────────────────────────────────
 
 const IMPACT_STATS = [
-  { value: 200, suffix: '+', label: 'MW Commissioned', unit: 'megawatts' },
-  { value: 1400, suffix: '+', label: 'Installations', unit: 'projects' },
-  { value: 280000, suffix: '', label: 'Tonnes CO₂ Avoided', unit: 'lifetime est.' },
-  { value: 350, suffix: 'Cr+', label: 'Client Savings', unit: '₹ cumulative' },
+  { value: 1000, suffix: '+', label: 'kW Commissioned', unit: 'kilowatts' },
+  { value: 100, suffix: '+', label: 'Installations', unit: 'projects' },
+  { value: 50000, suffix: '', label: 'Tonnes CO₂ Avoided', unit: 'lifetime est.' },
+  { value: 10, suffix: 'Cr+', label: 'Client Savings', unit: '₹ cumulative' },
 ]
 
 function Impact() {
@@ -1124,25 +846,25 @@ function Shop() {
 
 const TESTIMONIALS = [
   {
-    quote: "Garv Urja handled our 200 kWp rooftop from survey to net-metering approval in under six weeks. Our electricity bill dropped by 80% from day one.",
-    author: 'Rajesh Patel',
-    role: 'Owner, Patel Agro Industries',
-    location: 'Anand, Gujarat',
-    initials: 'RP',
+    quote: "Garv Urja handled our rooftop from survey to net-metering approval seamlessly. Our electricity bill dropped significantly from day one.",
+    author: 'Manish Khandelwal',
+    role: 'Owner, Kapil Vaastu Villa',
+    location: 'Alwar, Rajasthan',
+    initials: 'MK',
   },
   {
-    quote: "Excellent workmanship and even better after-sales support. Three years in and our system still produces above the guaranteed yield. Worth every rupee.",
-    author: 'Meena Shah',
-    role: 'Director, Shah Cold Storage',
-    location: 'Mehsana, Gujarat',
-    initials: 'MS',
+    quote: "Excellent workmanship and even better after-sales support. Our system still produces above the guaranteed yield. Worth every rupee.",
+    author: 'Manoj Chachan',
+    role: 'Owner, Satyatej Mercantile Private Limited',
+    location: 'New Shanti Kunj, Rajasthan',
+    initials: 'MC',
   },
   {
-    quote: "We installed a 3 kWp system at home under PM Surya Ghar. The team made the subsidy process completely painless. Highly recommend Garv Urja.",
-    author: 'Dilip Joshi',
+    quote: "We installed a system at home and the team made the entire process completely painless. Highly recommend Garv Urja Solutions.",
+    author: 'Devki Nandan Gupta',
     role: 'Homeowner',
-    location: 'Vadodara, Gujarat',
-    initials: 'DJ',
+    location: 'Ambedkar Nagar, Rajasthan',
+    initials: 'DG',
   },
 ]
 
@@ -1153,7 +875,7 @@ function Testimonials() {
         <Reveal style={{ marginBottom: 'clamp(40px, 5vw, 72px)', textAlign: 'center' }}>
           <Eyebrow style={{ justifyContent: 'center' }}>What Clients Say</Eyebrow>
           <h2 className="h-section" style={{ marginTop: 16 }}>
-            Trusted across Gujarat.
+            Trusted across.
           </h2>
         </Reveal>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }} className="max-md:grid-cols-1">
@@ -1203,7 +925,7 @@ const TEAM = [
   {
     name: 'Jay Jangid',
     role: 'Founder & Managing Director',
-    bio: 'Solar entrepreneur and GIDC Anand industry veteran with 15+ years in electrical engineering.',
+    bio: 'Solar entrepreneur and industry veteran with 15+ years in electrical engineering and pan-India project delivery.',
     img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80&auto=format&fit=crop',
   },
   {
@@ -1271,8 +993,8 @@ const FAQS = [
   { q: 'How long does installation typically take?', a: 'For a standard 3–10 kWp residential system, installation takes 3–5 working days once materials are delivered. Larger commercial or industrial systems (50–500 kWp) typically take 2–6 weeks. Net-metering approval from DISCOM may add 2–4 weeks post-installation.' },
   { q: 'What happens to my system during a power cut?', a: 'On-grid systems automatically shut down during grid outages for safety (anti-islanding protection). If you want backup power, we recommend a hybrid inverter with battery storage — we offer complete hybrid and off-grid solutions using LFP battery banks.' },
   { q: 'What warranty do you provide on the system?', a: 'We provide a 5-year comprehensive workmanship warranty. Modules carry a 25-year power output warranty from the manufacturer. Inverters typically carry 5–10 year warranties. Our O&M contracts extend your coverage with periodic audits and rapid-response support.' },
-  { q: "Can solar panels withstand Gujarat's extreme summers and monsoon?", a: "Yes — quality solar modules are tested to IEC 61215 and IEC 61730 standards, which include temperature cycling, humidity, UV, hail and wind load tests. Our mounting structures are designed for Gujarat's wind zones (Vz 39–44 m/s). We've had zero structural failures across 13+ years." },
-  { q: 'Is Garv Urja Solar a government-approved channel partner?', a: 'Yes, we are a MNRE-approved EPC company and GUVNL-empanelled vendor. We are registered under PM Surya Ghar and can process subsidy applications directly through the national portal on behalf of our clients.' },
+  { q: "Can solar panels withstand India's extreme summers, monsoons and dust storms?", a: "Yes — quality solar modules are tested to IEC 61215 and IEC 61730 standards, which include temperature cycling, humidity, UV, hail and wind load tests. Our mounting structures are designed for India's wind zones (including cyclone-prone coasts and desert belts) and we use anti-soiling coated glass on every panel to handle dusty conditions. We've had zero structural failures across our installed base nationwide." },
+  { q: 'Is Garv Urja Solutions a government-approved channel partner?', a: 'Yes, we are an MNRE-registered EPC company serving customers across India. We are registered under PM Surya Ghar and can process subsidy applications directly through the national portal on behalf of our clients in every state.' },
 ]
 
 function FAQ() {
@@ -1346,10 +1068,10 @@ function Contact() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
               {[
-                { label: 'Address', value: 'Vitthal Udhyog Nagar GIDC, Anand, Gujarat — 388 001' },
-                { label: 'Phone', value: '02692 234 776\n+91 93138 04410' },
-                { label: 'Email', value: 'info@jsepl.in' },
-                { label: 'CIN', value: 'U40300GJ2011PTC\nISO 9001:2015 Certified' },
+                { label: 'Address', value: 'I-15, Ambedkar Nagar,\nAlwar, Rajasthan – 301001' },
+                { label: 'Phone', value: '+91-8810405990' },
+                { label: 'Email', value: 'garvurjasolutions@gmail.com' },
+                { label: 'Registration', value: 'Registered Vendor' },
               ].map(({ label, value }) => (
                 <div key={label}>
                   <p style={{ fontFamily: 'IBM Plex Mono', fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'color-mix(in oklch, var(--bg) 45%, transparent)', marginBottom: 6 }}>{label}</p>
@@ -1371,7 +1093,7 @@ function Contact() {
               gap: 10,
             }}>
               <SunMark size={24} />
-              <span style={{ fontFamily: 'IBM Plex Mono', fontSize: 11, color: 'color-mix(in oklch, var(--bg) 40%, transparent)', letterSpacing: '0.12em' }}>GIDC Anand, Gujarat</span>
+              <span style={{ fontFamily: 'IBM Plex Mono', fontSize: 11, color: 'color-mix(in oklch, var(--bg) 40%, transparent)', letterSpacing: '0.12em' }}>Ambedkar Nagar, Alwar</span>
             </div>
           </Reveal>
 
@@ -1452,81 +1174,6 @@ function Contact() {
   )
 }
 
-// ─── Footer ───────────────────────────────────────────────────────────────────
-
-function Footer() {
-  return (
-    <footer style={{ background: 'var(--ink)', color: 'var(--bg)', padding: 'clamp(48px, 7vw, 96px) 0 32px' }}>
-      <div className="container-site">
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: 40, paddingBottom: 56, borderBottom: '1px solid color-mix(in oklch, var(--bg) 12%, transparent)' }} className="max-md:grid-cols-2 max-sm:grid-cols-1">
-          {/* Brand */}
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-              <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--ochre)', flexShrink: 0 }} />
-              <span style={{ fontFamily: 'IBM Plex Mono', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--bg)', fontWeight: 500 }}>Garv Urja Solar</span>
-            </div>
-            <p style={{ fontSize: 14, lineHeight: 1.65, color: 'color-mix(in oklch, var(--bg) 55%, transparent)', maxWidth: 280, marginBottom: 20 }}>
-              Gujarat's trusted solar EPC company. Designing, building and maintaining clean energy systems since 2011.
-            </p>
-            <p style={{ fontFamily: 'IBM Plex Mono', fontSize: 10, letterSpacing: '0.12em', color: 'color-mix(in oklch, var(--bg) 35%, transparent)' }}>
-              CIN: U40300GJ2011PTC<br />
-              ISO 9001:2015 Certified
-            </p>
-          </div>
-
-          {/* Services */}
-          <div>
-            <p style={{ fontFamily: 'IBM Plex Mono', fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'color-mix(in oklch, var(--bg) 40%, transparent)', marginBottom: 16 }}>Services</p>
-            {['Rooftop Solar', 'Ground-Mount EPC', 'O&M / AMC', 'Solar Pumps', 'Battery Storage'].map(l => (
-              <a key={l} href="#services" style={{ display: 'block', fontSize: 14, color: 'color-mix(in oklch, var(--bg) 65%, transparent)', textDecoration: 'none', marginBottom: 10, transition: 'color 0.2s' }}
-                onMouseEnter={e => (e.currentTarget.style.color = 'var(--bg)')}
-                onMouseLeave={e => (e.currentTarget.style.color = 'color-mix(in oklch, var(--bg) 65%, transparent)')}
-              >
-                {l}
-              </a>
-            ))}
-          </div>
-
-          {/* Company */}
-          <div>
-            <p style={{ fontFamily: 'IBM Plex Mono', fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'color-mix(in oklch, var(--bg) 40%, transparent)', marginBottom: 16 }}>Company</p>
-            {['About', 'Projects', 'Team', 'FAQ', 'Contact'].map(l => (
-              <a key={l} href={`#${l.toLowerCase()}`} style={{ display: 'block', fontSize: 14, color: 'color-mix(in oklch, var(--bg) 65%, transparent)', textDecoration: 'none', marginBottom: 10, transition: 'color 0.2s' }}
-                onMouseEnter={e => (e.currentTarget.style.color = 'var(--bg)')}
-                onMouseLeave={e => (e.currentTarget.style.color = 'color-mix(in oklch, var(--bg) 65%, transparent)')}
-              >
-                {l}
-              </a>
-            ))}
-          </div>
-
-          {/* Contact */}
-          <div>
-            <p style={{ fontFamily: 'IBM Plex Mono', fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'color-mix(in oklch, var(--bg) 40%, transparent)', marginBottom: 16 }}>Get In Touch</p>
-            <p style={{ fontSize: 14, color: 'color-mix(in oklch, var(--bg) 65%, transparent)', lineHeight: 1.6, marginBottom: 12 }}>
-              Vitthal Udhyog Nagar GIDC,<br />Anand, Gujarat 388 001
-            </p>
-            <a href="tel:+919313804410" style={{ display: 'block', fontSize: 14, color: 'color-mix(in oklch, var(--bg) 65%, transparent)', textDecoration: 'none', marginBottom: 6 }}>+91 93138 04410</a>
-            <a href="mailto:info@jsepl.in" style={{ display: 'block', fontSize: 14, color: 'var(--ochre)', textDecoration: 'none' }}>info@jsepl.in</a>
-          </div>
-        </div>
-
-        {/* Bottom bar */}
-        <div style={{ paddingTop: 28, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-          <p style={{ fontFamily: 'IBM Plex Mono', fontSize: 10, letterSpacing: '0.12em', color: 'color-mix(in oklch, var(--bg) 35%, transparent)' }}>
-            © {new Date().getFullYear()} Garv Urja Solar Pvt. Ltd. All rights reserved.
-          </p>
-          <div style={{ display: 'flex', gap: 24 }}>
-            {['Privacy Policy', 'Terms of Service'].map(l => (
-              <a key={l} href="#" style={{ fontFamily: 'IBM Plex Mono', fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'color-mix(in oklch, var(--bg) 35%, transparent)', textDecoration: 'none' }}>{l}</a>
-            ))}
-          </div>
-        </div>
-      </div>
-    </footer>
-  )
-}
-
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function Home() {
@@ -1544,7 +1191,7 @@ export default function Home() {
         <Impact />
         <Shop />
         <Testimonials />
-        <Team />
+        {/* <Team /> */}
         <FAQ />
         <Contact />
       </main>

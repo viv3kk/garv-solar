@@ -2,10 +2,10 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: "Garv Urja Solar — Gujarat's Trusted Solar EPC Company",
+  title: 'Garv Urja Solutions — MNRE Registered Solar EPC Company',
   description:
-    'Garv Urja Solar Pvt. Ltd. designs, installs and maintains rooftop & ground-mount solar systems across Gujarat. 13+ years, 200+ MW commissioned.',
-  keywords: 'solar EPC, rooftop solar, Gujarat, Anand, solar installation, solar O&M',
+    'Garv Urja Solutions designs, builds and maintains rooftop & ground-mount solar systems. Trusted solar EPC partner for residential, commercial and industrial clients.',
+  keywords: 'solar EPC, rooftop solar, Alwar, Rajasthan, solar installation, solar O&M, MNRE registered',
 }
 
 export default function RootLayout({
