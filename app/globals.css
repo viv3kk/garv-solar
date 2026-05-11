@@ -455,6 +455,88 @@ input[type='range']::-webkit-slider-thumb {
 .form-input::placeholder { color: color-mix(in oklch, var(--bg) 45%, transparent); }
 .form-input:focus { border-color: var(--ochre); }
 
+/* ─── Home-Solar Hero (viewport-locked) ────────────────────────────────── */
+.home-hero {
+  /* True viewport height with svh fallback for mobile-safe sizing */
+  min-height: 100svh;
+  min-height: 100dvh;
+  /* Hard-cap so 4K monitors don't render a 1500px hero */
+  max-height: 1080px;
+}
+
+/* Viewport zones — 12% top spacing for nav clearance, content top zone (~50vh)
+   pushes content above the visual mid-point, glass bar pinned ~6% from bottom. */
+.home-hero__top {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  padding-top: clamp(86px, 14vh, 132px);
+  padding-bottom: clamp(16px, 3vh, 32px);
+}
+
+.home-hero__bottom {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  padding-bottom: clamp(20px, 4vh, 44px);
+}
+
+.home-hero__content {
+  max-width: 600px;
+}
+
+.home-hero__title {
+  /* Cap headline ~ 64px on big screens; scale down on narrow ones */
+  font-size: clamp(34px, 4.6vw, 64px);
+  line-height: 1.05;
+  color: var(--ink);
+  margin-bottom: clamp(16px, 2.2vh, 24px);
+  text-shadow: 0 1px 1px rgba(255, 250, 240, 0.4);
+}
+
+.home-hero__rule {
+  width: 56px;
+  height: 2px;
+  background: var(--ochre-deep);
+  margin-bottom: clamp(14px, 2vh, 22px);
+  border-radius: 2px;
+}
+
+.home-hero__lede {
+  font-size: clamp(14px, 1.05vw, 16px);
+  line-height: 1.55;
+  color: var(--ink-soft);
+  max-width: 440px;
+  margin-bottom: clamp(20px, 3vh, 30px);
+}
+
+.home-hero__ctas {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Shorter laptop screens — tighten further */
+@media (max-height: 760px) {
+  .home-hero__title {
+    font-size: clamp(30px, 4vw, 52px);
+    margin-bottom: 14px;
+  }
+  .home-hero__lede {
+    margin-bottom: 18px;
+  }
+}
+
+/* Mobile — extra-compact, give image room */
+@media (max-width: 640px) {
+  .home-hero__title {
+    font-size: clamp(32px, 9vw, 44px);
+  }
+  .home-hero__top {
+    padding-top: clamp(96px, 14vh, 130px);
+  }
+}
+
 /* ─── Liquid-glass benefits bar ────────────────────────────────────────── */
 .liquid-glass-bar {
   position: relative;
@@ -495,7 +577,7 @@ input[type='range']::-webkit-slider-thumb {
 .liquid-glass-grid {
   position: relative;
   border-radius: 21px;
-  padding: clamp(18px, 2.2vw, 26px) clamp(22px, 2.6vw, 34px);
+  padding: clamp(14px, 1.6vw, 20px) clamp(20px, 2.4vw, 30px);
   background: linear-gradient(
     180deg,
     rgba(255, 255, 255, 0.42) 0%,

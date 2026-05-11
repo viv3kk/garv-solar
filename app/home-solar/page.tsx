@@ -238,15 +238,13 @@ const HERO_FEATURES: { icon: React.ReactNode; title: string; sub: string }[] = [
 function HomeSolarHero() {
   return (
     <section
+      className="home-hero"
       style={{
         position: 'relative',
         overflow: 'hidden',
-        minHeight: 'clamp(640px, 96svh, 900px)',
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'flex-end',
-        paddingTop: 'clamp(96px, 12vh, 140px)',
-        paddingBottom: 'clamp(28px, 4vw, 48px)',
+        justifyContent: 'space-between',
         background: 'var(--ink)',
         isolation: 'isolate',
       }}
@@ -298,26 +296,16 @@ function HomeSolarHero() {
         }}
       />
 
-      <div className="container-site" style={{ position: 'relative', zIndex: 2, width: '100%' }}>
-        {/* Headline + CTA — pinned to upper-left */}
+      {/* Top zone: headline + CTA */}
+      <div className="container-site home-hero__top">
         <div
+          className="home-hero__content"
           style={{
-            maxWidth: 620,
             animation: 'fade-in 0.85s ease both',
             animationDelay: '0.1s',
-            marginBottom: 'clamp(40px, 8vw, 110px)',
           }}
         >
-          <h1
-            className="h-display"
-            style={{
-              fontSize: 'clamp(38px, 5.4vw, 80px)',
-              lineHeight: 1.04,
-              color: 'var(--ink)',
-              marginBottom: 28,
-              textShadow: '0 1px 1px rgba(255,250,240,0.4)',
-            }}
-          >
+          <h1 className="home-hero__title h-display">
             More than<br />
             sunlight.<br />
             It&rsquo;s your{' '}
@@ -325,31 +313,15 @@ function HomeSolarHero() {
           </h1>
 
           {/* Decorative ochre rule */}
-          <div
-            style={{
-              width: 64,
-              height: 2,
-              background: 'var(--ochre-deep)',
-              marginBottom: 22,
-              borderRadius: 2,
-            }}
-          />
+          <div className="home-hero__rule" />
 
-          <p
-            style={{
-              fontSize: 'clamp(15px, 1.15vw, 17px)',
-              lineHeight: 1.6,
-              color: 'var(--ink-soft)',
-              maxWidth: 460,
-              marginBottom: 32,
-            }}
-          >
+          <p className="home-hero__lede">
             Clean energy. Lower bills. Energy independence.<br />
             A smarter investment for your family and<br />
             a better tomorrow for generations to come.
           </p>
 
-          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          <div className="home-hero__ctas">
             <a href="/#contact" className="btn btn-primary btn-arrow">
               Book a free site visit
             </a>
@@ -358,8 +330,10 @@ function HomeSolarHero() {
             </a>
           </div>
         </div>
+      </div>
 
-        {/* Liquid-glass benefits bar — pinned to bottom */}
+      {/* Bottom zone: liquid-glass benefits bar */}
+      <div className="container-site home-hero__bottom">
         <div
           className="liquid-glass-bar"
           style={{
