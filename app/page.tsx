@@ -313,6 +313,7 @@ function Hero() {
         justifyContent: 'flex-end',
         position: 'relative',
         overflow: 'hidden',
+        paddingTop: 'clamp(88px, 10vh, 120px)',
         paddingBottom: 'clamp(60px, 8vw, 120px)',
         background: 'var(--bg-warm)',
       }}
@@ -428,28 +429,59 @@ function Hero() {
             </div>
           </div>
 
-          {/* Right: metrics */}
+          {/* Right: image + metrics */}
           <div style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: '1px',
-            background: 'var(--rule)',
-            border: '1px solid var(--rule)',
-            borderRadius: 16,
-            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 12,
             animation: 'fade-in 0.8s ease both',
             animationDelay: '0.3s',
           }}>
-            {HERO_METRICS.map(({ value, suffix, label }) => (
-              <div key={label} style={{ background: 'var(--bg)', padding: 'clamp(20px, 3vw, 32px)' }}>
-                <div className="stat-big" style={{ marginBottom: 6 }}>
-                  <Counter target={value} suffix={suffix} />
+            {/* Hero image */}
+            <div style={{
+              borderRadius: 16,
+              overflow: 'hidden',
+              aspectRatio: '16/9',
+              position: 'relative',
+              flexShrink: 0,
+            }}>
+              <img
+                src="/images/services-rooftop-happy-family-landscape.png"
+                alt="Family with rooftop solar installation at sunset"
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+              />
+              <div style={{
+                position: 'absolute', inset: 0,
+                background: 'linear-gradient(to top, rgba(0,0,0,0.22) 0%, transparent 50%)',
+              }} />
+              <span style={{
+                position: 'absolute', bottom: 12, left: 12,
+                fontFamily: 'IBM Plex Mono', fontSize: 10, letterSpacing: '0.14em',
+                textTransform: 'uppercase', color: 'rgba(255,255,255,0.85)',
+              }}>Gujarat residential install</span>
+            </div>
+
+            {/* Metrics grid */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '1px',
+              background: 'var(--rule)',
+              border: '1px solid var(--rule)',
+              borderRadius: 16,
+              overflow: 'hidden',
+            }}>
+              {HERO_METRICS.map(({ value, suffix, label }) => (
+                <div key={label} style={{ background: 'var(--bg)', padding: 'clamp(16px, 2vw, 24px)' }}>
+                  <div className="stat-big" style={{ marginBottom: 6 }}>
+                    <Counter target={value} suffix={suffix} />
+                  </div>
+                  <p style={{ fontFamily: 'IBM Plex Mono', fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--ink-mute)' }}>
+                    {label}
+                  </p>
                 </div>
-                <p style={{ fontFamily: 'IBM Plex Mono', fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--ink-mute)' }}>
-                  {label}
-                </p>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
 
@@ -529,8 +561,8 @@ function About() {
         <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 40, alignItems: 'center' }} className="max-md:grid-cols-1">
           <Reveal>
             <ImgPh
-              src="https://images.unsplash.com/photo-1509391366360-2e959784a276?w=900&q=80&auto=format&fit=crop"
-              alt="Field of solar panels at sunset"
+              src="/images/about-home-solar.jpg.png"
+              alt="Family on balcony with rooftop solar panels at sunset"
               tag="Anand, Gujarat"
               style={{ aspectRatio: '4/3', borderRadius: 16 }}
             />
@@ -579,7 +611,7 @@ const SERVICES = [
     title: 'Rooftop Solar for Homes & MSMEs',
     body: 'From a 3 kW home system to a 500 kW MSME rooftop, we design grid-tied and hybrid systems that maximise subsidy capture and minimise payback periods.',
     bullets: ['PM Surya Ghar subsidy assistance', 'On-grid, off-grid & hybrid options', 'Shadow-free layout with string optimisers', 'Bi-facial module options for high yield'],
-    img: 'https://images.unsplash.com/photo-1559302504-64aae6ca6b6d?w=900&q=80&auto=format&fit=crop',
+    img: '/images/services-rooftop-happy-family.png',
     imgTag: 'Residential install, Vadodara',
   },
   {
@@ -597,7 +629,7 @@ const SERVICES = [
     title: 'Full EPC for Commercial & Industrial',
     body: 'We act as the single contract EPC partner for C&I clients — handling procurement, civil, electrical, net-metering, and commissioning under one roof.',
     bullets: ['Single contract accountability', 'Detailed energy yield simulation', 'Net-metering & banking advisory', 'DPR preparation & bank funding support'],
-    img: 'https://images.unsplash.com/photo-1497440001374-f26997328c1b?w=900&q=80&auto=format&fit=crop',
+    img: '/images/services-epc.png',
     imgTag: 'Industrial EPC, GIDC Anand',
   },
   {
@@ -755,6 +787,24 @@ function Calculator() {
           {/* Inputs */}
           <Reveal>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+              {/* Savings visual */}
+              <div style={{ borderRadius: 14, overflow: 'hidden', aspectRatio: '16/9', position: 'relative' }}>
+                <img
+                  src="/images/client-happy-bill.png"
+                  alt="Family reviewing solar savings on electricity bill"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                  loading="lazy"
+                />
+                <div style={{
+                  position: 'absolute', inset: 0,
+                  background: 'linear-gradient(to top, color-mix(in oklch, var(--ink) 70%, transparent) 0%, transparent 55%)',
+                }} />
+                <p style={{
+                  position: 'absolute', bottom: 14, left: 14,
+                  fontFamily: 'IBM Plex Mono', fontSize: 11, letterSpacing: '0.14em',
+                  textTransform: 'uppercase', color: 'rgba(255,255,255,0.85)',
+                }}>Real savings, every month</p>
+              </div>
               {/* Property type */}
               <div>
                 <label style={{ fontFamily: 'IBM Plex Mono', fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'color-mix(in oklch, var(--bg) 60%, transparent)', display: 'block', marginBottom: 14 }}>Property Type</label>
@@ -851,7 +901,7 @@ const PROJECTS = [
     size: '120 kWp',
     type: 'Ground-Mount',
     year: '2024',
-    img: 'https://images.unsplash.com/photo-1605980776566-0486c3ac7617?w=900&q=80&auto=format&fit=crop',
+    img: '/images/project-industrial.png',
     tag: 'Anand, Gujarat',
   },
   {
