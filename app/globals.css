@@ -455,6 +455,275 @@ input[type='range']::-webkit-slider-thumb {
 .form-input::placeholder { color: color-mix(in oklch, var(--bg) 45%, transparent); }
 .form-input:focus { border-color: var(--ochre); }
 
+/* ─── Nav (desktop vs mobile) ──────────────────────────────────────────
+   Pure CSS toggle so inline styles can't override visibility. */
+.nav-desktop {
+  display: flex;
+}
+
+.nav-mobile-btn {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .nav-desktop {
+    display: none;
+  }
+  .nav-mobile-btn {
+    display: inline-flex;
+  }
+}
+
+/* ─── Responsive grid overrides ─────────────────────────────────────────
+   The codebase mixes inline `style.gridTemplateColumns` with Tailwind
+   responsive classes like `max-md:grid-cols-1`. Inline styles win, so the
+   responsive class is a no-op. These !important overrides make the
+   responsive utilities actually fire when an inline grid is set. */
+
+@media (max-width: 767px) {
+  .max-md\:grid-cols-1 {
+    grid-template-columns: 1fr !important;
+  }
+  .max-md\:grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+  /* Tighter section padding on mobile */
+  :root {
+    --section-py: clamp(56px, 11vw, 88px);
+    --gutter: clamp(18px, 5vw, 28px);
+  }
+  /* Section heads stack on mobile */
+  .section-head {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+    margin-bottom: clamp(28px, 6vw, 44px) !important;
+  }
+  /* Display headings shrink so they don't overflow */
+  .h-display {
+    font-size: clamp(38px, 11vw, 64px) !important;
+  }
+  .h-section {
+    font-size: clamp(28px, 8vw, 44px) !important;
+  }
+  .h-card {
+    font-size: clamp(20px, 5.4vw, 24px) !important;
+  }
+  .lede {
+    font-size: clamp(15px, 4.2vw, 17px) !important;
+  }
+  .stat-big {
+    font-size: clamp(36px, 11vw, 56px) !important;
+  }
+  /* Buttons go full-width on the smallest devices for tap targets */
+  .btn {
+    padding: 13px 20px;
+    font-size: 10.5px;
+  }
+}
+
+@media (max-width: 639px) {
+  .max-sm\:grid-cols-1 {
+    grid-template-columns: 1fr !important;
+  }
+  .max-sm\:grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Hide overflow on the body so a small bleed off-screen doesn't create
+   a horizontal scrollbar on mobile (image fade-ins etc.) */
+@media (max-width: 767px) {
+  body { overflow-x: hidden; }
+}
+
+/* ─── Process Steps (responsive 3×2 → 2×3 tiles) ───────────────────────
+   Hairline internal dividers; no outer border. Each Reveal wrapper acts
+   as a grid cell so the borders need to live on the wrapper, not the
+   inner .process-tile element. */
+.process-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.process-grid > .reveal {
+  /* Top + left borders draw the internal grid */
+  border-top: 1px solid var(--rule);
+  border-left: 1px solid var(--rule);
+}
+
+/* Remove left border on the first column (items 1 and 4 on 3-col grid) */
+.process-grid > .reveal:nth-child(3n + 1) {
+  border-left: none;
+}
+
+/* Remove top border on the first row (items 1, 2, 3 on 3-col grid) */
+.process-grid > .reveal:nth-child(-n + 3) {
+  border-top: none;
+}
+
+.process-tile {
+  padding: clamp(24px, 3vw, 40px);
+  height: 100%;
+  background: var(--bg);
+  transition: background 0.25s ease;
+}
+
+.process-grid > .reveal:hover .process-tile {
+  background: var(--bg-warm);
+}
+
+.process-tile__num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--ochre);
+  letter-spacing: 0.12em;
+}
+
+.process-tile__title {
+  font-family: 'Newsreader', serif;
+  font-size: 22px;
+  margin-top: 16px;
+  margin-bottom: 12px;
+}
+
+.process-tile__body {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+/* Tablet & mobile — 2 columns × 3 rows */
+@media (max-width: 767px) {
+  .process-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Reset the desktop nth-child rules */
+  .process-grid > .reveal {
+    border-top: 1px solid var(--rule);
+    border-left: 1px solid var(--rule);
+  }
+
+  /* First column on a 2-col grid is every odd-indexed child (1, 3, 5) */
+  .process-grid > .reveal:nth-child(3n + 1) {
+    border-left: 1px solid var(--rule);
+  }
+  .process-grid > .reveal:nth-child(odd) {
+    border-left: none;
+  }
+
+  /* First row on a 2-col grid is items 1 and 2 */
+  .process-grid > .reveal:nth-child(-n + 3) {
+    border-top: 1px solid var(--rule);
+  }
+  .process-grid > .reveal:nth-child(-n + 2) {
+    border-top: none;
+  }
+
+  .process-tile {
+    padding: clamp(20px, 5vw, 28px);
+  }
+
+  .process-tile__title {
+    font-size: 18px;
+    margin-top: 12px;
+    margin-bottom: 10px;
+  }
+
+  .process-tile__body {
+    font-size: 14px;
+  }
+}
+
+/* Extra-narrow phones — drop to a single column for legibility */
+@media (max-width: 420px) {
+  .process-grid {
+    grid-template-columns: 1fr;
+  }
+  .process-grid > .reveal {
+    border-left: none !important;
+  }
+  .process-grid > .reveal:not(:first-child) {
+    border-top: 1px solid var(--rule) !important;
+  }
+  .process-grid > .reveal:first-child {
+    border-top: none !important;
+  }
+}
+
+/* ─── Home-Solar Impact Band (responsive 4 → 2×2 tiles) ─────────────────
+   Each .impact-tile is wrapped in a <Reveal> div, so the grid children
+   are .reveal wrappers — divider borders must live on the wrapper for
+   nth-child selectors to address the correct grid positions. */
+.impact-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+.impact-tile {
+  padding-block: 16px;
+  padding-inline: 4px;
+  position: relative;
+}
+
+.impact-tile__value {
+  font-family: 'Newsreader', serif;
+  font-size: clamp(38px, 4vw, 56px);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.impact-tile__label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: color-mix(in oklch, var(--bg) 55%, transparent);
+}
+
+@media (max-width: 767px) {
+  .impact-grid {
+    /* 2-by-2 grid on mobile so all four stats stay visible together */
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0;
+  }
+
+  /* Borders sit on the grid children — the Reveal wrappers — so the
+     nth-child selectors land on the actual grid positions. */
+  .impact-grid > .reveal {
+    border-top: 1px solid color-mix(in oklch, var(--bg) 22%, transparent);
+    border-left: 1px solid color-mix(in oklch, var(--bg) 22%, transparent);
+    display: flex;
+    align-items: stretch;
+  }
+
+  /* Top row (children 1 & 2) → no top border, so the row sits flush
+     with the section's top padding instead of showing an outer edge. */
+  .impact-grid > .reveal:nth-child(-n + 2) {
+    border-top: none;
+  }
+
+  /* Left column (children 1 & 3) → no left border for the same reason. */
+  .impact-grid > .reveal:nth-child(odd) {
+    border-left: none;
+  }
+
+  .impact-tile {
+    padding: 22px 12px;
+    width: 100%;
+  }
+
+  .impact-tile__value {
+    font-size: clamp(30px, 8vw, 40px);
+  }
+
+  .impact-tile__label {
+    font-size: 10px;
+    line-height: 1.3;
+  }
+}
+
 /* ─── Home-Solar Hero (viewport-locked) ────────────────────────────────── */
 .home-hero {
   /* True viewport height with svh fallback for mobile-safe sizing */
@@ -462,6 +731,22 @@ input[type='range']::-webkit-slider-thumb {
   min-height: 100dvh;
   /* Hard-cap so 4K monitors don't render a 1500px hero */
   max-height: 1080px;
+}
+
+/* Desktop overlay: cream gradient from left for text legibility */
+.home-hero__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(105deg,
+      color-mix(in oklch, var(--bg-warm) 90%, transparent) 0%,
+      color-mix(in oklch, var(--bg-warm) 80%, transparent) 18%,
+      color-mix(in oklch, var(--bg-warm) 50%, transparent) 36%,
+      color-mix(in oklch, var(--bg-warm) 18%, transparent) 52%,
+      transparent 68%
+    );
 }
 
 /* Viewport zones — 12% top spacing for nav clearance, content top zone (~50vh)
@@ -512,7 +797,7 @@ input[type='range']::-webkit-slider-thumb {
 
 .home-hero__ctas {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
@@ -527,13 +812,74 @@ input[type='range']::-webkit-slider-thumb {
   }
 }
 
-/* Mobile — extra-compact, give image room */
-@media (max-width: 640px) {
-  .home-hero__title {
-    font-size: clamp(32px, 9vw, 44px);
+/* ─── Mobile (≤767px) — completely different vertical hero layout ─────── */
+@media (max-width: 767px) {
+  .home-hero {
+    /* let content size dictate rather than locking strictly to viewport */
+    min-height: auto;
+    max-height: none;
   }
+
+  /* On mobile, gradient runs top-to-bottom (cream at top for headline area)
+     instead of left-to-right. The portrait image has its sunset/sky at top. */
+  .home-hero__overlay {
+    background:
+      linear-gradient(180deg,
+        color-mix(in oklch, var(--bg-warm) 78%, transparent) 0%,
+        color-mix(in oklch, var(--bg-warm) 55%, transparent) 18%,
+        color-mix(in oklch, var(--bg-warm) 18%, transparent) 36%,
+        transparent 56%
+      );
+  }
+
   .home-hero__top {
-    padding-top: clamp(96px, 14vh, 130px);
+    padding-top: clamp(92px, 13vh, 120px);
+    padding-bottom: 0;
+  }
+
+  .home-hero__bottom {
+    padding-top: clamp(280px, 50vh, 380px);
+    padding-bottom: clamp(20px, 4vh, 36px);
+  }
+
+  .home-hero__content {
+    max-width: 100%;
+  }
+
+  .home-hero__title {
+    /* Slightly tighter on mobile so headline + CTAs fit upper viewport.
+       !important needed because .h-display also matches and has !important
+       from the global mobile typography overrides above. */
+    font-size: clamp(32px, 9vw, 44px) !important;
+    line-height: 1.08 !important;
+    margin-bottom: 14px;
+  }
+
+  .home-hero__rule {
+    width: 48px;
+    margin-bottom: 14px;
+  }
+
+  .home-hero__lede {
+    font-size: 14.5px;
+    margin-bottom: 20px;
+  }
+
+  .home-hero__ctas {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .home-hero__ctas .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 380px) {
+  .home-hero__title {
+    font-size: 30px;
   }
 }
 
@@ -650,15 +996,33 @@ input[type='range']::-webkit-slider-thumb {
 @media (max-width: 900px) {
   .liquid-glass-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 16px 12px;
+    gap: 14px 16px;
   }
   .hero-feature[data-first="0"]::before {
     display: none;
   }
+  .hero-feature[data-first="0"] {
+    padding-left: 0;
+  }
 }
 
-@media (max-width: 520px) {
+@media (max-width: 480px) {
   .liquid-glass-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px 14px;
+    padding: 14px 16px;
+  }
+  .hero-feature {
+    gap: 10px;
+  }
+  .hero-feature-title {
+    font-size: 12.5px;
+  }
+  .hero-feature-sub {
+    font-size: 11px;
+  }
+  /* "Lifetime support" is the 5th item — span full width on its own row */
+  .hero-feature:nth-child(5) {
+    grid-column: 1 / -1;
   }
 }

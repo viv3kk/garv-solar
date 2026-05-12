@@ -249,39 +249,31 @@ function HomeSolarHero() {
         isolation: 'isolate',
       }}
     >
-      {/* Background image — full bleed */}
-      <img
-        src="/images/home-solar-hero.png"
-        alt="Indian family on a rooftop with solar panels at sunset"
-        style={{
-          position: 'absolute',
-          inset: 0,
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
-          objectPosition: 'center right',
-          zIndex: -2,
-        }}
-      />
+      {/* Background image — full bleed, swaps to portrait crop on mobile */}
+      <picture>
+        <source
+          media="(max-width: 767px)"
+          srcSet="/images/home-solar-hero-mobile.png"
+        />
+        <img
+          src="/images/home-solar-hero.png"
+          alt="Indian family on a rooftop with solar panels at sunset"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'center right',
+            zIndex: -2,
+          }}
+        />
+      </picture>
 
-      {/* Cream-to-clear gradient on the left for text legibility */}
+      {/* Desktop: cream gradient from left; Mobile: cream gradient from top */}
       <div
         aria-hidden
-        style={{
-          position: 'absolute',
-          inset: 0,
-          zIndex: -1,
-          background: `
-            linear-gradient(105deg,
-              color-mix(in oklch, var(--bg-warm) 90%, transparent) 0%,
-              color-mix(in oklch, var(--bg-warm) 80%, transparent) 18%,
-              color-mix(in oklch, var(--bg-warm) 50%, transparent) 36%,
-              color-mix(in oklch, var(--bg-warm) 18%, transparent) 52%,
-              transparent 68%
-            )
-          `,
-          pointerEvents: 'none',
-        }}
+        className="home-hero__overlay"
       />
 
       {/* Soft bottom gradient so the glass bar reads cleanly */}
@@ -291,7 +283,7 @@ function HomeSolarHero() {
           position: 'absolute',
           inset: 0,
           zIndex: -1,
-          background: 'linear-gradient(180deg, transparent 60%, rgba(0,0,0,0.18) 100%)',
+          background: 'linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.22) 100%)',
           pointerEvents: 'none',
         }}
       />
@@ -368,7 +360,7 @@ function ImpactBand() {
   return (
     <section style={{ background: 'var(--ink)', color: 'var(--bg)', padding: 'clamp(40px, 6vw, 64px) 0' }}>
       <div className="container-site">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 24 }} className="max-md:grid-cols-2 max-sm:grid-cols-1">
+        <div className="impact-grid">
           {[
             { v: 100, s: '+', l: 'Homes solarised' },
             { v: 1000, s: '+ kW', l: 'Total commissioned' },
@@ -376,11 +368,11 @@ function ImpactBand() {
             { v: 25, s: ' yrs', l: 'Designed life' },
           ].map(({ v, s, l }) => (
             <Reveal key={l}>
-              <div style={{ paddingBlock: 16 }}>
-                <div style={{ fontFamily: 'Newsreader', fontSize: 'clamp(38px, 4vw, 56px)', lineHeight: 1, marginBottom: 8 }}>
+              <div className="impact-tile">
+                <div className="impact-tile__value">
                   <Counter target={v} suffix={s} />
                 </div>
-                <p style={{ fontFamily: 'IBM Plex Mono', fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'color-mix(in oklch, var(--bg) 55%, transparent)' }}>
+                <p className="impact-tile__label">
                   {l}
                 </p>
               </div>

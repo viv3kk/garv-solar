@@ -203,7 +203,7 @@ export function Nav() {
         </a>
 
         {/* Desktop nav links */}
-        <nav style={{ display: 'flex', alignItems: 'center', gap: 28 }} className="hidden md:flex">
+        <nav className="nav-desktop" style={{ alignItems: 'center', gap: 28 }}>
           {NAV_LINKS.map(({ label, href }) => (
             <a
               key={label}
@@ -230,7 +230,7 @@ export function Nav() {
 
         {/* Mobile hamburger */}
         <button
-          className="md:hidden"
+          className="nav-mobile-btn"
           onClick={() => setMenuOpen(!menuOpen)}
           style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink)', padding: 4 }}
           aria-label="Toggle menu"

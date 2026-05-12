@@ -453,17 +453,13 @@ function Process() {
             </h2>
           </div>
         </Reveal>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1px', background: 'var(--rule)' }} className="max-sm:grid-cols-1 max-md:grid-cols-2">
+        <div className="process-grid">
           {PROCESS_STEPS.map(({ num, title, body }, i) => (
             <Reveal key={num} delay={i * 60}>
-              <div style={{
-                background: 'var(--bg)',
-                padding: 'clamp(24px, 3vw, 40px)',
-                height: '100%',
-              }}>
-                <span style={{ fontFamily: 'IBM Plex Mono', fontSize: 11, color: 'var(--ochre)', letterSpacing: '0.12em' }}>{num}</span>
-                <h3 style={{ fontFamily: 'Newsreader', fontSize: 22, marginTop: 16, marginBottom: 12 }}>{title}</h3>
-                <p style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--ink-soft)' }}>{body}</p>
+              <div className="process-tile">
+                <span className="process-tile__num">{num}</span>
+                <h3 className="process-tile__title">{title}</h3>
+                <p className="process-tile__body">{body}</p>
               </div>
             </Reveal>
           ))}
