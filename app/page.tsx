@@ -275,9 +275,9 @@ function About() {
               Solar pioneers
             </h2>
             <ImgPh
-              src="/images/about-home-solar.jpg.png"
-              alt="Family on balcony with rooftop solar panels at sunset"
-              tag="Solar for India"
+              src="/images/sites/site-1.jpeg"
+              alt="Garv Urja Solutions team installing a ground-mount solar array on site"
+              tag="On-site, Alwar"
               style={{ aspectRatio: '4/3', borderRadius: 16 }}
             />
           </Reveal>
@@ -623,28 +623,28 @@ const PROJECTS = [
     tag: 'Pune, Maharashtra',
   },
   {
-    title: 'Commercial Complex, Hyderabad',
-    size: '250 kWp',
-    type: 'Rooftop EPC',
-    year: '2023',
-    img: 'https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=900&q=80&auto=format&fit=crop',
-    tag: 'Hyderabad, Telangana',
-  },
-  {
-    title: 'Residential Society, Indore',
-    size: '60 kWp',
-    type: 'Rooftop',
-    year: '2024',
-    img: 'https://images.unsplash.com/photo-1559302504-64aae6ca6b6d?w=900&q=80&auto=format&fit=crop',
-    tag: 'Indore, Madhya Pradesh',
-  },
-  {
-    title: 'Agri-Solar Farm, Gujarat',
-    size: '500 kWp',
+    title: 'Institutional Ground-Mount, Alwar',
+    size: '25 kWp',
     type: 'Ground-Mount',
-    year: '2023',
-    img: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=900&q=80&auto=format&fit=crop',
-    tag: 'Ahmedabad, Gujarat',
+    year: '2026',
+    img: '/images/sites/site-2.jpeg',
+    tag: 'Arvind Reni, Alwar',
+  },
+  {
+    title: 'Residential Solar Carport',
+    size: '8 kWp',
+    type: 'Elevated Rooftop',
+    year: '2026',
+    img: '/images/sites/site-3.jpeg',
+    tag: 'Budhvihar, Alwar',
+  },
+  {
+    title: 'Rooftop Elevated Mount',
+    size: '5 kWp',
+    type: 'Elevated Rooftop',
+    year: '2026',
+    img: '/images/sites/site-4.jpeg',
+    tag: 'Aravali Vihar, Alwar',
   },
 ]
 
@@ -661,7 +661,8 @@ function Projects() {
           </Reveal>
           <Reveal delay={100}>
             <p className="lede">
-              Multiple installations across residential, commercial, industrial and agricultural segments — here's a selection.
+              From elevated residential rooftops to institutional-scale ground-mount arrays —
+              recent installations from across our portfolio.
             </p>
             <div style={{ marginTop: 24 }}>
               <a href="#contact" className="btn btn-ghost btn-arrow">View All Projects</a>
