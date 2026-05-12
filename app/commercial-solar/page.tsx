@@ -110,9 +110,18 @@ const BENEFITS = [
   },
 ]
 
-const PROCESS = [
+// Phase 02 hidden for now via { hidden: true } — easy to re-enable by flipping
+// the flag. The page renders only visible phases and re-numbers them
+// sequentially so users see 01..05 without a gap.
+type Phase = {
+  title: string
+  duration: string
+  points: string[]
+  hidden?: boolean
+}
+
+const PROCESS: Phase[] = [
   {
-    n: 'Phase 01',
     title: 'Feasibility & energy audit',
     duration: 'Week 1',
     points: [
@@ -123,7 +132,6 @@ const PROCESS = [
     ],
   },
   {
-    n: 'Phase 02',
     title: 'Technical & commercial design',
     duration: 'Week 2',
     points: [
@@ -132,9 +140,9 @@ const PROCESS = [
       'Subsidy and incentive mapping',
       'Detailed BOQ with Tier-1 component options',
     ],
+    hidden: true,
   },
   {
-    n: 'Phase 03',
     title: 'Approvals & financing',
     duration: 'Weeks 3–5',
     points: [
@@ -145,7 +153,6 @@ const PROCESS = [
     ],
   },
   {
-    n: 'Phase 04',
     title: 'Procurement & EPC',
     duration: 'Weeks 4–10',
     points: [
@@ -156,7 +163,6 @@ const PROCESS = [
     ],
   },
   {
-    n: 'Phase 05',
     title: 'Commissioning & handover',
     duration: 'Week 11',
     points: [
@@ -167,7 +173,6 @@ const PROCESS = [
     ],
   },
   {
-    n: 'Phase 06',
     title: 'O&M for 25 years',
     duration: 'Ongoing',
     points: [
@@ -178,6 +183,10 @@ const PROCESS = [
     ],
   },
 ]
+
+const VISIBLE_PHASES = PROCESS
+  .filter(p => !p.hidden)
+  .map((p, i) => ({ ...p, n: `Phase 0${i + 1}` }))
 
 const FAQS = [
   {
@@ -521,7 +530,7 @@ function ProcessSteps() {
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'clamp(20px, 2.5vw, 32px)' }} className="max-md:grid-cols-1">
-          {PROCESS.map((p, i) => (
+          {VISIBLE_PHASES.map((p, i) => (
             <Reveal key={p.n} delay={i * 50}>
               <article style={{
                 padding: 'clamp(24px, 2.5vw, 32px)',

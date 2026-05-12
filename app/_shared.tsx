@@ -154,10 +154,9 @@ export function Counter({
 
 // ─── Nav (shared across pages) ─────────────────────────────────────────────
 
-// NOTE: "Commercial" intentionally hidden from public nav for the soft launch
-// (phase 2 — the /commercial-solar page is still live and reachable by URL).
 const NAV_LINKS: { label: string; href: string }[] = [
   { label: 'Home Solar', href: '/home-solar' },
+  { label: 'Commercial', href: '/commercial-solar' },
   { label: 'Projects', href: '/#projects' },
   { label: 'FAQs', href: '/faqs' },
   { label: 'Contact', href: '/#contact' },
@@ -321,6 +320,7 @@ export function Footer() {
             <p style={{ fontFamily: 'IBM Plex Mono', fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'color-mix(in oklch, var(--bg) 40%, transparent)', marginBottom: 16 }}>Solutions</p>
             {[
               { label: 'Home Solar', href: '/home-solar' },
+              { label: 'Commercial Solar', href: '/commercial-solar' },
               { label: 'Ground-Mount EPC', href: '/#services' },
               { label: 'O&M / AMC', href: '/#services' },
               { label: 'Solar Pumps', href: '/#services' },
