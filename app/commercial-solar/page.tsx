@@ -598,10 +598,10 @@ function CaseStudy() {
                 {[
                   { v: '450 kW', l: 'System size' },
                   { v: '6,75,000', l: 'Units / year' },
-                  { v: '₹2.7 Cr', l: 'Total investment' },
-                  { v: '₹76 L', l: 'Annual savings' },
-                  { v: '3.6 yrs', l: 'Post-tax payback' },
-                  { v: '24.8%', l: 'Equity IRR' },
+                  { v: '₹2.7 Cr*', l: 'Total investment' },
+                  { v: '₹76 L*', l: 'Annual savings' },
+                  { v: '3.6 yrs*', l: 'Post-tax payback' },
+                  { v: '24.8%*', l: 'Equity IRR' },
                 ].map(s => (
                   <div key={s.l} style={{ background: 'var(--bg)', padding: 'clamp(18px, 2vw, 24px)' }}>
                     <div style={{ fontFamily: 'Newsreader', fontSize: 'clamp(22px, 2.4vw, 30px)', lineHeight: 1, marginBottom: 8 }}>{s.v}</div>
@@ -609,6 +609,10 @@ function CaseStudy() {
                   </div>
                 ))}
               </div>
+              <p style={{ fontSize: 11, fontFamily: 'IBM Plex Mono', letterSpacing: '0.04em', color: 'var(--ink-mute)', lineHeight: 1.55 }}>
+                * Indicative figures from one site. Final commercial returns depend on tariff slab,
+                load profile, financing choice and applicable tax position.
+              </p>
 
               <article style={{
                 flex: 1,

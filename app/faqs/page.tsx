@@ -424,10 +424,12 @@ const CATEGORIES: Category[] = [
         q: "What's covered in your AMC / maintenance package?",
         a: (
           <>
-            We offer a <strong>free 5-year AMC</strong> on every system we install. It includes quarterly
+            We offer a <strong>free 5-year AMC*</strong> on every system we install. It includes quarterly
             panel cleaning, monthly remote performance audits, all preventive maintenance, IV-curve testing,
             connection torque-checks, and component replacement under warranty. Extended AMC options cover
-            years 6–25.
+            years 6–25. <em style={{ fontStyle: 'normal', color: 'var(--ink-mute)', fontSize: '0.92em' }}>
+              (*Conditions apply — full AMC terms shared with your quote.)
+            </em>
           </>
         ),
       },
@@ -496,8 +498,8 @@ const CATEGORIES: Category[] = [
         a: (
           <>
             Yes — survey, 3D design, structural check, financing assistance, subsidy paperwork, supply,
-            installation, commissioning, net-metering, monitoring, and 5-year AMC. You have one point of
-            contact and one accountable team. No middlemen, no surprise charges.
+            installation, commissioning, net-metering, monitoring, and 5-year AMC*. You have one point of
+            contact and one accountable team. No middlemen, no surprise charges. (*AMC subject to terms.)
           </>
         ),
       },

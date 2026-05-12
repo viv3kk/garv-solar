@@ -583,11 +583,11 @@ function Calculator() {
             }}>
               {[
                 { label: 'Recommended Size', value: `${kW} kWp`, sub: 'system capacity' },
-                { label: 'Monthly Savings', value: `₹${monthlySavings.toLocaleString('en-IN')}`, sub: `@ ₹${tariff}/unit` },
-                { label: 'Yearly Savings', value: `₹${yearlySavings.toLocaleString('en-IN')}`, sub: 'estimated savings' },
+                { label: 'Monthly Savings', value: `₹${monthlySavings.toLocaleString('en-IN')}*`, sub: `@ ₹${tariff}/unit` },
+                { label: 'Yearly Savings', value: `₹${yearlySavings.toLocaleString('en-IN')}*`, sub: 'estimated savings' },
                 { label: 'CO₂ Offset', value: `${co2} t/yr`, sub: 'tonnes per year' },
-                { label: 'Approx. Cost', value: `₹${(cost / 100000).toFixed(1)}L`, sub: 'before subsidy' },
-                { label: 'Payback Period', value: `${payback} yrs`, sub: 'return on investment' },
+                { label: 'Approx. Cost', value: `₹${(cost / 100000).toFixed(1)}L*`, sub: 'before subsidy' },
+                { label: 'Payback Period', value: `${payback} yrs*`, sub: 'return on investment' },
               ].map(({ label, value, sub }) => (
                 <div key={label} style={{ padding: 'clamp(16px, 2vw, 24px)', background: 'color-mix(in oklch, var(--bg) 5%, transparent)' }}>
                   <p style={{ fontFamily: 'IBM Plex Mono', fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'color-mix(in oklch, var(--bg) 45%, transparent)', marginBottom: 8 }}>{label}</p>
@@ -1185,7 +1185,7 @@ export default function Home() {
         <Calculator />
         <Projects />
         <Impact />
-        <Shop />
+        {/* <Shop /> */}
         <Testimonials />
         {/* <Team /> */}
         <FAQ />

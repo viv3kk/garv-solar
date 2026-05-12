@@ -18,7 +18,7 @@ const WHY_US = [
   },
   {
     title: 'One team, end to end.',
-    body: 'Site survey, 3D design, PM Surya Ghar paperwork, DISCOM net-metering, installation, commissioning, and 5-year AMC — same project manager from quote to year 25.',
+    body: 'Site survey, 3D design, PM Surya Ghar paperwork, DISCOM net-metering, installation, commissioning, and 5-year AMC* — same project manager from quote to year 25.',
     tag: 'No middlemen',
   },
   {
@@ -101,8 +101,8 @@ const PROCESS_STEPS = [
   },
   {
     n: '06',
-    title: 'Free 5-year AMC',
-    body: 'Quarterly cleaning, monthly remote audits, and 48-hour on-site response for the first 5 years — at no extra cost.',
+    title: 'Free 5-year AMC*',
+    body: 'Quarterly cleaning, monthly remote audits, and 48-hour on-site response for the first 5 years — subject to AMC terms.',
     duration: 'Years 1–5',
   },
 ]
@@ -228,9 +228,9 @@ function IconHeadset() {
 }
 
 const HERO_FEATURES: { icon: React.ReactNode; title: string; sub: string }[] = [
-  { icon: <IconSun />, title: 'Save up to 95%', sub: 'on electricity bills' },
-  { icon: <IconShield />, title: '5-year free', sub: 'maintenance' },
-  { icon: <IconRupee />, title: '₹78,000 subsidy', sub: 'under PM Surya Ghar' },
+  { icon: <IconSun />, title: 'Save up to 95%*', sub: 'on electricity bills' },
+  { icon: <IconShield />, title: '5-year free*', sub: 'maintenance' },
+  { icon: <IconRupee />, title: '₹78,000 subsidy*', sub: 'under PM Surya Ghar' },
   { icon: <IconHouse />, title: 'Increase property', sub: 'value' },
   { icon: <IconHeadset />, title: 'Lifetime support', sub: 'you can trust' },
 ]
@@ -351,6 +351,10 @@ function HomeSolarHero() {
             ))}
           </div>
         </div>
+        <p className="home-hero__disclaimer">
+          * Indicative figures. Subsidy varies by system size and state policy. 5-year AMC and savings —{' '}
+          <em style={{ fontStyle: 'normal', color: 'var(--ochre-deep)' }}>conditions apply</em>.
+        </p>
       </div>
     </section>
   )
@@ -473,8 +477,8 @@ function Packages() {
                   {[
                     { label: 'Generates', value: p.daily },
                     { label: 'Roof needed', value: p.roof },
-                    { label: 'Indicative price', value: p.indicative },
-                    { label: 'After subsidy', value: p.afterSubsidy, accent: true },
+                    { label: 'Indicative price', value: `${p.indicative}*` },
+                    { label: 'After subsidy', value: `${p.afterSubsidy}*`, accent: true },
                   ].map(item => (
                     <li key={item.label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, paddingBottom: 8, borderBottom: '1px solid var(--rule)' }}>
                       <span style={{ color: 'var(--ink-mute)' }}>{item.label}</span>
@@ -488,8 +492,10 @@ function Packages() {
           ))}
         </div>
 
-        <p style={{ marginTop: 32, fontSize: 12, color: 'var(--ink-mute)', textAlign: 'center', fontFamily: 'IBM Plex Mono', letterSpacing: '0.08em' }}>
-          Prices include Tier-1 panels, inverter, structures, cabling, net metering and installation. GST extra at 13.8%.
+        <p style={{ marginTop: 32, fontSize: 12, color: 'var(--ink-mute)', textAlign: 'center', fontFamily: 'IBM Plex Mono', letterSpacing: '0.08em', maxWidth: 760, marginInline: 'auto', lineHeight: 1.55 }}>
+          * Indicative pricing. Final quote depends on site survey, brand selection and DISCOM zone.
+          Prices include Tier-1 panels, inverter, structures, cabling, net metering and installation.
+          GST extra at 13.8%.
         </p>
       </div>
     </section>
@@ -532,6 +538,11 @@ function Process() {
                 </div>
                 <h3 className="h-card" style={{ marginBottom: 10 }}>{step.title}</h3>
                 <p style={{ color: 'var(--ink-soft)', fontSize: 14, lineHeight: 1.6 }}>{step.body}</p>
+                {step.title.includes('*') && (
+                  <p style={{ marginTop: 12, fontSize: 11, fontFamily: 'IBM Plex Mono', letterSpacing: '0.04em', color: 'var(--ink-mute)', lineHeight: 1.55 }}>
+                    * Conditions apply. Full AMC terms shared with your quote.
+                  </p>
+                )}
               </div>
             </Reveal>
           ))}
@@ -623,12 +634,12 @@ function SavingsExample() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 {[
                   { l: 'Old bill (monthly)', v: '₹4,500' },
-                  { l: 'New bill (monthly)', v: '< ₹400', accent: true },
-                  { l: 'System cost', v: '₹1.85 L' },
-                  { l: 'Subsidy back', v: '– ₹78,000' },
-                  { l: 'Net investment', v: '₹1.07 L', accent: true },
-                  { l: 'Payback', v: '~ 3.8 years' },
-                  { l: 'Year 25 savings', v: '₹15.4 L', accent: true },
+                  { l: 'New bill (monthly)', v: '< ₹400*', accent: true },
+                  { l: 'System cost', v: '₹1.85 L*' },
+                  { l: 'Subsidy back', v: '– ₹78,000*' },
+                  { l: 'Net investment', v: '₹1.07 L*', accent: true },
+                  { l: 'Payback', v: '~ 3.8 years*' },
+                  { l: 'Year 25 savings', v: '₹15.4 L*', accent: true },
                 ].map(row => (
                   <div key={row.l} style={{
                     display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
@@ -644,8 +655,10 @@ function SavingsExample() {
                   </div>
                 ))}
               </div>
-              <p style={{ marginTop: 18, fontSize: 11, color: 'color-mix(in oklch, var(--bg) 45%, transparent)', fontFamily: 'IBM Plex Mono', letterSpacing: '0.08em' }}>
-                Assumes 4% annual tariff hike; 0.5% panel degradation/yr; average Indian residential slab.
+              <p style={{ marginTop: 18, fontSize: 11, color: 'color-mix(in oklch, var(--bg) 45%, transparent)', fontFamily: 'IBM Plex Mono', letterSpacing: '0.08em', lineHeight: 1.55 }}>
+                * Indicative figures for a 3 kW system. Actual numbers depend on consumption,
+                roof, brand and DISCOM zone. Assumes 4% annual tariff hike; 0.5% panel
+                degradation/yr; average Indian residential slab.
               </p>
             </div>
           </Reveal>
@@ -808,7 +821,7 @@ function CallToAction() {
                 'Tier-1 panels, BIS-certified inverters',
                 '170 km/h wind-rated structures',
                 '25-year linear performance warranty',
-                'Free 5-year AMC with quarterly cleaning',
+                'Free 5-year AMC* with quarterly cleaning',
               ].map(item => (
                 <li key={item} style={{ display: 'flex', alignItems: 'center', gap: 14, color: 'color-mix(in oklch, var(--bg) 85%, transparent)', fontSize: 15 }}>
                   <span style={{ width: 18, height: 18, borderRadius: '50%', background: 'var(--ochre)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -820,6 +833,9 @@ function CallToAction() {
                 </li>
               ))}
             </ul>
+            <p style={{ marginTop: 18, fontSize: 11, fontFamily: 'IBM Plex Mono', letterSpacing: '0.04em', color: 'color-mix(in oklch, var(--bg) 45%, transparent)', lineHeight: 1.55 }}>
+              * Conditions apply. Full AMC terms shared with your quote.
+            </p>
           </Reveal>
         </div>
       </div>
