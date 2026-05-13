@@ -705,7 +705,7 @@ function Impact() {
   return (
     <section className="section-pad" style={{ background: 'var(--bg-deep)' }}>
       <div className="container-site">
-        <Reveal style={{ marginBottom: 'clamp(40px, 5vw, 64px)' }}>
+        <Reveal>
           <Eyebrow>Our Impact</Eyebrow>
         </Reveal>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1px', background: 'var(--rule)' }} className="max-md:grid-cols-2">

@@ -50,3 +50,20 @@ Styling is a **hybrid of CSS custom properties + Tailwind utility classes + inli
 ### Images
 
 All images are Unsplash URLs with `?w=900&q=80&auto=format&fit=crop`. The `next.config.ts` allowlists `images.unsplash.com`. When adding new images use the `<ImgPh src=... tag=...>` component — not a raw `<img>` or Next.js `<Image>` — so the gradient overlay and location tag render correctly.
+
+## Design System
+
+**Read `DESIGN_SYSTEM.md` before making any visual or layout changes.** It is the canonical reference for:
+
+- All colour tokens (never hard-code colours)
+- Typography scale (use `.h-display`, `.h-section`, `.h-card`, `.lede`, `.eyebrow`)
+- Spacing scale (`--space-xs` → `--space-2xl`, `--section-py`, `--section-gap`)
+- Layout helpers (`.container-site`, `.section-pad`, `.section-head`)
+- Component patterns (`Eyebrow`, `ImgPh`, `Reveal`, `Counter`, buttons)
+- Section checklist and anti-patterns
+
+### Key spacing rules (quick reference)
+- Section padding → always via `className="section-pad"` (uses `--section-py: clamp(48px, 5vw, 80px)`)
+- Heading-to-content gap → `style={{ marginBottom: 'var(--section-gap)' }}`
+- All other gaps → use `--space-xs` through `--space-2xl` tokens
+- Never hard-code pixel values for spacing

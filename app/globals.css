@@ -35,7 +35,26 @@
   /* Layout */
   --max-w: 1320px;
   --gutter: clamp(20px, 4vw, 56px);
-  --section-py: clamp(72px, 9vw, 140px);
+
+  /* ── Spacing scale ──────────────────────────────────────────
+     Use these tokens everywhere — never hard-code pixel values.
+     xs   →  8–12 px   (inline gaps, icon padding)
+     sm   → 16–24 px   (component inner padding)
+     md   → 24–40 px   (card gaps, tight stacks)
+     lg   → 40–64 px   (section-head → content gap)
+     xl   → 56–88 px   (between major blocks inside a section)
+     2xl  → 48–80 px   (section top/bottom padding — section-py)
+  ─────────────────────────────────────────────────────────── */
+  --space-xs:  clamp(8px,  1vw,  12px);
+  --space-sm:  clamp(16px, 2vw,  24px);
+  --space-md:  clamp(24px, 3vw,  40px);
+  --space-lg:  clamp(40px, 4.5vw, 64px);
+  --space-xl:  clamp(48px, 5.5vw, 80px);
+  --space-2xl: clamp(64px, 7vw,  104px);
+
+  /* Section rhythm */
+  --section-py:  clamp(48px, 5vw, 80px);   /* was clamp(72px,9vw,140px) — ~43% tighter */
+  --section-gap: var(--space-lg);           /* eyebrow/heading → content gap */
 }
 
 /* Sage variant */
@@ -203,7 +222,7 @@ body.grain::after {
   grid-template-columns: 1fr 1fr;
   gap: 56px;
   align-items: end;
-  margin-bottom: clamp(40px, 5vw, 72px);
+  margin-bottom: var(--section-gap);
 }
 
 @media (max-width: 760px) {
