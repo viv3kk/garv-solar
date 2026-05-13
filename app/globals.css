@@ -1,5 +1,5 @@
 /* ─── Google Fonts ─────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;1,400;1,500&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;1,400;1,500&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Devanagari:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -31,6 +31,11 @@
 
   /* Clay */
   --clay:       oklch(0.55 0.085 45);
+
+  /* Leaf — nature-green used for savings emphasis on the calculator */
+  --leaf:       oklch(0.55 0.13  145);
+  --leaf-deep:  oklch(0.40 0.11  145);
+  --leaf-soft:  oklch(0.92 0.05  145);
 
   /* Layout */
   --max-w: 1320px;
@@ -866,6 +871,708 @@ input[type='range']::-webkit-slider-thumb {
     text-align: center;
     border-radius: 14px;
   }
+}
+
+/* ─── Calculator hero ──────────────────────────────────────────────────── */
+.calc-hero {
+  position: relative;
+  min-height: 100svh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-top: clamp(82px, 11vh, 116px);
+  padding-bottom: clamp(22px, 3vh, 40px);
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    radial-gradient(900px 600px at 90% 5%, color-mix(in oklch, var(--ochre) 14%, transparent), transparent 60%),
+    radial-gradient(900px 600px at 10% 95%, color-mix(in oklch, var(--leaf) 12%, transparent), transparent 60%),
+    var(--bg-warm);
+}
+
+/* ─── Calculator background — shared bits ────────────────────────────── */
+.calc-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+/* ─── Sun (realistic, layered) — used by Sunrise variant ─────────────── */
+.calc-sun-real {
+  position: absolute;
+  width: clamp(420px, 64vw, 760px);
+  height: clamp(420px, 64vw, 760px);
+  top: clamp(-280px, -18vw, -180px);
+  right: clamp(-260px, -16vw, -150px);
+  pointer-events: none;
+  filter: drop-shadow(0 0 80px color-mix(in oklch, var(--ochre) 28%, transparent));
+}
+.calc-sun-real__rays {
+  transform-origin: 120px 120px;
+  animation: sun-rotate 90s linear infinite;
+}
+.calc-sun-real__rays-fast {
+  transform-origin: 120px 120px;
+  animation: sun-rotate-rev 60s linear infinite, sun-pulse 5s ease-in-out infinite;
+}
+.calc-sun-real__core {
+  transform-origin: 120px 120px;
+  animation: sun-breathe 4s ease-in-out infinite;
+}
+@keyframes sun-rotate     { to { transform: rotate(360deg); } }
+@keyframes sun-rotate-rev { to { transform: rotate(-360deg); } }
+@keyframes sun-pulse      { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+@keyframes sun-breathe    { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
+
+/* Light beams (sunbeam streaks) */
+.calc-beam {
+  position: absolute;
+  width: 200%;
+  height: 60px;
+  background: linear-gradient(90deg, transparent, color-mix(in oklch, var(--ochre) 22%, transparent), transparent);
+  pointer-events: none;
+  transform-origin: top right;
+  opacity: 0.5;
+  animation: beam-drift 16s ease-in-out infinite;
+}
+.calc-beam:nth-child(1) { top: 8%;  right: -50%; transform: rotate(-12deg); animation-delay: -2s; }
+.calc-beam:nth-child(2) { top: 22%; right: -50%; transform: rotate(-18deg); animation-delay: -7s; opacity: 0.32; }
+.calc-beam:nth-child(3) { top: 38%; right: -50%; transform: rotate(-8deg);  animation-delay: -11s; opacity: 0.25; }
+@keyframes beam-drift {
+  0%, 100% { opacity: 0.2; }
+  50%      { opacity: 0.5; }
+}
+
+/* Twinkling sparkles */
+.calc-sparkle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ochre);
+  opacity: 0;
+  animation: sparkle-twinkle 3.5s ease-in-out infinite;
+  box-shadow: 0 0 8px var(--ochre);
+}
+.calc-sparkle::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  background: radial-gradient(circle, color-mix(in oklch, var(--ochre) 60%, transparent), transparent 70%);
+}
+@keyframes sparkle-twinkle {
+  0%, 100% { opacity: 0; transform: scale(0.6); }
+  50%      { opacity: 0.9; transform: scale(1); }
+}
+
+/* Soft drifting cloud (used by sunrise) */
+.calc-cloud {
+  position: absolute;
+  width: 220px;
+  height: 40px;
+  background: radial-gradient(ellipse, rgba(255,255,255,0.7) 0%, transparent 70%);
+  filter: blur(20px);
+  opacity: 0.7;
+  animation: cloud-drift 40s linear infinite;
+  pointer-events: none;
+}
+@keyframes cloud-drift {
+  from { transform: translateX(-200px); }
+  to   { transform: translateX(110vw); }
+}
+
+/* ─── Power-Flow variant — flowing energy lines ────────────────────── */
+.calc-flow {
+  position: absolute;
+  width: 200%;
+  left: -50%;
+  height: 2px;
+  border-top: 1.5px dashed color-mix(in oklch, var(--leaf-deep) 60%, transparent);
+  opacity: 0.35;
+  pointer-events: none;
+}
+.calc-flow-pulse {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  margin-top: -7px;
+  border-radius: 50%;
+  background: var(--leaf);
+  box-shadow: 0 0 14px var(--leaf), 0 0 26px color-mix(in oklch, var(--leaf) 60%, transparent);
+  animation: flow-travel 8s linear infinite;
+  pointer-events: none;
+}
+@keyframes flow-travel {
+  from { left: -3%; opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  to   { left: 103%; opacity: 0; }
+}
+/* Faint grid as backdrop for flow variant */
+.calc-grid-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to right, color-mix(in oklch, var(--ink) 6%, transparent) 1px, transparent 1px) 0 0/64px 64px,
+    linear-gradient(to bottom, color-mix(in oklch, var(--ink) 6%, transparent) 1px, transparent 1px) 0 0/64px 64px;
+  opacity: 0.35;
+  pointer-events: none;
+  mask-image: radial-gradient(ellipse at 50% 50%, black, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 50%, black, transparent 70%);
+}
+
+/* ─── Garden variant — leaves, petals, gentle sway ──────────────────── */
+.calc-leaf {
+  position: absolute;
+  color: var(--leaf-deep);
+  opacity: 0.22;
+  pointer-events: none;
+  animation: leaf-float 14s ease-in-out infinite;
+}
+.calc-leaf--sway { animation: leaf-sway 9s ease-in-out infinite; }
+@keyframes leaf-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%       { transform: translateY(-32px) rotate(8deg); }
+}
+@keyframes leaf-sway {
+  0%, 100% { transform: rotate(-6deg) translateY(0); }
+  50%       { transform: rotate(8deg) translateY(-18px); }
+}
+
+.calc-petal {
+  position: absolute;
+  width: 8px;
+  height: 14px;
+  background: color-mix(in oklch, var(--ochre) 70%, var(--bg-warm));
+  border-radius: 100% 0 100% 0;
+  opacity: 0.55;
+  pointer-events: none;
+  animation: petal-drift 18s linear infinite;
+}
+@keyframes petal-drift {
+  0%   { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+  10%  { opacity: 0.6; }
+  90%  { opacity: 0.6; }
+  100% { transform: translate(-40px, 320px) rotate(120deg); opacity: 0; }
+}
+
+/* Garden uses a smaller sun */
+.calc-sun-soft {
+  position: absolute;
+  top: 6%;
+  right: 8%;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, #FFE08A 0%, #F5B442 45%, transparent 75%);
+  filter: blur(4px);
+  opacity: 0.7;
+  animation: sun-breathe 5s ease-in-out infinite;
+}
+
+/* Garden — silhouette tree, gentle sway */
+.garden-tree {
+  position: absolute;
+  color: var(--leaf-deep);
+  opacity: 0.20;
+  pointer-events: none;
+  transform-origin: bottom center;
+  animation: tree-sway 9s ease-in-out infinite;
+}
+.garden-tree--alt { animation-duration: 11s; animation-delay: -3s; opacity: 0.16; }
+@keyframes tree-sway {
+  0%, 100% { transform: rotate(-1.2deg); }
+  50%      { transform: rotate(1.8deg); }
+}
+
+/* Garden — flying bird (translate + flap) */
+.garden-bird {
+  position: absolute;
+  color: var(--ink-soft);
+  opacity: 0.42;
+  pointer-events: none;
+  animation: bird-fly 22s linear infinite;
+}
+.garden-bird__wings {
+  transform-origin: center;
+  animation: bird-flap 0.45s ease-in-out infinite;
+}
+@keyframes bird-fly {
+  from { transform: translateX(-15vw); }
+  to   { transform: translateX(120vw); }
+}
+@keyframes bird-flap {
+  0%, 100% { transform: scaleY(1); }
+  50%      { transform: scaleY(0.55); }
+}
+
+/* Garden — grass blades along the bottom */
+.garden-grass {
+  position: absolute;
+  bottom: 0;
+  color: var(--leaf-deep);
+  opacity: 0.22;
+  pointer-events: none;
+  transform-origin: bottom center;
+  animation: grass-sway 4.5s ease-in-out infinite;
+}
+@keyframes grass-sway {
+  0%, 100% { transform: rotate(-4deg); }
+  50%      { transform: rotate(5deg); }
+}
+
+/* Garden — butterfly, slow drifting flight */
+.garden-butterfly {
+  position: absolute;
+  color: var(--ochre);
+  opacity: 0.5;
+  pointer-events: none;
+  animation: butterfly-drift 18s ease-in-out infinite;
+}
+.garden-butterfly__wing-l,
+.garden-butterfly__wing-r {
+  transform-origin: 50% 50%;
+  animation: butterfly-flap 0.32s ease-in-out infinite;
+}
+.garden-butterfly__wing-r { animation-direction: alternate-reverse; }
+@keyframes butterfly-drift {
+  0%   { transform: translate(0, 0) rotate(-4deg); }
+  25%  { transform: translate(40px, -22px) rotate(4deg); }
+  50%  { transform: translate(80px, 8px) rotate(-2deg); }
+  75%  { transform: translate(40px, 30px) rotate(6deg); }
+  100% { transform: translate(0, 0) rotate(-4deg); }
+}
+@keyframes butterfly-flap {
+  0%, 100% { transform: scaleX(1); }
+  50%      { transform: scaleX(0.35); }
+}
+
+/* Garden — flowers */
+.garden-flower {
+  position: absolute;
+  color: var(--ochre);
+  opacity: 0.55;
+  pointer-events: none;
+  animation: grass-sway 5s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+
+/* Garden — gradient horizon glow */
+.garden-horizon {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 50%, color-mix(in oklch, var(--leaf-soft) 60%, transparent) 100%);
+  pointer-events: none;
+}
+
+/* ─── Hindi hook (rotating message) ──────────────────────────────── */
+/* Fixed min-height so the rotating message can't change the savings card
+   height between renders — eliminates layout shift when the slider moves. */
+.hindi-hook {
+  margin-top: 2px;
+  padding: 10px 14px;
+  background: color-mix(in oklch, var(--leaf) 8%, var(--bg));
+  border-left: 3px solid var(--leaf-deep);
+  border-radius: 0 12px 12px 0;
+  position: relative;
+  overflow: hidden;
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+}
+.hindi-hook__content {
+  width: 100%;
+}
+.hindi-hook__content {
+  animation: hook-in 0.5s ease;
+}
+.hindi-hook__hi {
+  font-family: 'Noto Sans Devanagari', 'IBM Plex Sans', system-ui, sans-serif;
+  font-size: 14.5px;
+  color: var(--leaf-deep);
+  font-weight: 500;
+  line-height: 1.35;
+}
+.hindi-hook__en {
+  font-size: 11px;
+  color: var(--ink-mute);
+  margin-top: 3px;
+  font-style: italic;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+@keyframes hook-in {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Layout — two columns on desktop, stack on mobile */
+.calc-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: clamp(18px, 2.4vw, 36px);
+  align-items: stretch;
+  position: relative;
+  z-index: 2;
+  margin-top: clamp(18px, 2.4vh, 32px);
+}
+/* Make the Reveal wrappers fill their grid cell so both cards equalise height */
+.calc-layout > .reveal {
+  display: flex;
+}
+.calc-layout > .reveal > .calc-card,
+.calc-layout > .reveal > .calc-savings {
+  flex: 1;
+  width: 100%;
+}
+@media (max-width: 900px) {
+  .calc-layout { grid-template-columns: 1fr; }
+}
+
+/* ─── Styled select with custom chevron ─────────────────────────────── */
+.calc-select {
+  position: relative;
+  width: 100%;
+}
+.calc-select select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 100%;
+  padding: 13px 44px 13px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--rule);
+  background: var(--bg);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14px;
+  color: var(--ink);
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+.calc-select select:hover {
+  border-color: color-mix(in oklch, var(--leaf) 40%, var(--rule));
+}
+.calc-select select:focus {
+  border-color: var(--leaf-deep);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--leaf) 18%, transparent);
+}
+.calc-select__chevron {
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  transform: translateY(-50%);
+  color: var(--ink-mute);
+  pointer-events: none;
+  transition: color 0.18s, transform 0.2s;
+}
+.calc-select:hover .calc-select__chevron {
+  color: var(--leaf-deep);
+}
+
+/* Input card — soft, paper-like */
+.calc-card {
+  background: color-mix(in oklch, var(--bg) 92%, transparent);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--rule);
+  border-radius: 20px;
+  padding: clamp(16px, 2vw, 24px);
+  box-shadow: 0 18px 40px -30px rgba(0, 0, 0, 0.18);
+}
+
+/* Savings hero card — the main "wow" surface */
+.calc-savings {
+  position: relative;
+  background: linear-gradient(165deg,
+    color-mix(in oklch, var(--leaf-soft) 80%, var(--bg)) 0%,
+    var(--bg) 60%);
+  border: 1px solid color-mix(in oklch, var(--leaf) 30%, var(--rule));
+  border-radius: 20px;
+  padding: clamp(20px, 2.4vw, 30px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+  box-shadow:
+    0 30px 60px -30px color-mix(in oklch, var(--leaf-deep) 35%, transparent),
+    0 8px 16px -8px rgba(0, 0, 0, 0.1);
+}
+
+/* The huge animated number */
+.calc-savings__amount {
+  font-family: 'Newsreader', serif;
+  font-size: clamp(48px, 6.5vw, 78px);
+  line-height: 0.95;
+  letter-spacing: -0.025em;
+  color: var(--leaf-deep);
+  font-weight: 400;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  position: relative;
+  /* Soft glow + breathe */
+  filter: drop-shadow(0 4px 16px color-mix(in oklch, var(--leaf) 22%, transparent));
+  animation: calc-amount-breathe 4s ease-in-out infinite;
+}
+@keyframes calc-amount-breathe {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-2px); }
+}
+.calc-savings__amount sup {
+  font-size: 0.42em;
+  color: var(--ink-mute);
+  font-weight: 500;
+  font-family: 'IBM Plex Mono', monospace;
+  letter-spacing: 0.06em;
+  align-self: flex-start;
+  margin-top: 0.6em;
+}
+
+.calc-savings__caption {
+  font-size: 13.5px;
+  color: var(--ink-soft);
+  margin-top: -4px;
+}
+
+/* Mini-stats row inside savings card. The PeaceOfMind illustration above it
+   uses flex: 1 to absorb the breathing space, so this no longer needs
+   margin-top: auto — the order is: result-cluster → peace illustration
+   (expands to fill) → action-cluster (sits naturally at the bottom). */
+.calc-mini-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding-top: 14px;
+  margin-top: 4px;
+  border-top: 1px solid color-mix(in oklch, var(--leaf) 18%, var(--rule));
+}
+
+/* ─── Peace-of-mind illustration (fills the breathing space) ───────────── */
+.calc-peace {
+  flex: 1 1 0;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding-block: 6px;
+}
+.calc-peace__svg {
+  width: 100%;
+  max-width: 360px;
+  height: auto;
+  max-height: 160px;
+}
+.calc-peace__caption {
+  font-family: 'Newsreader', serif;
+  font-size: 15px;
+  color: var(--ink-soft);
+  text-align: center;
+  letter-spacing: -0.005em;
+}
+
+/* Sun — gentle bob */
+.calc-peace__sun {
+  transform-origin: 68px 60px;
+  animation: peace-bob 4.5s ease-in-out infinite;
+}
+@keyframes peace-bob {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-3px); }
+}
+
+/* Rays — slow spin */
+.calc-peace__rays {
+  transform-origin: 68px 60px;
+  animation: peace-spin 40s linear infinite;
+}
+@keyframes peace-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Energy waves — staggered pulses travelling from sun to house */
+.calc-peace__wave {
+  stroke-dasharray: 240;
+  opacity: 0;
+  animation: peace-wave 3.6s ease-in-out infinite;
+}
+.calc-peace__wave.wave-1 { animation-delay: 0s; }
+.calc-peace__wave.wave-2 { animation-delay: 0.5s; }
+.calc-peace__wave.wave-3 { animation-delay: 1s; }
+@keyframes peace-wave {
+  0%   { stroke-dashoffset: 240; opacity: 0; }
+  20%  { opacity: 0.55; }
+  80%  { opacity: 0.55; }
+  100% { stroke-dashoffset: -240; opacity: 0; }
+}
+
+/* House — breathing scale and calm halo */
+.calc-peace__house {
+  transform-origin: 313px 130px;
+  animation: peace-breathe 5s ease-in-out infinite;
+}
+@keyframes peace-breathe {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.015); }
+}
+.calc-peace__halo {
+  transform-origin: 313px 100px;
+  animation: peace-halo 4s ease-in-out infinite;
+}
+@keyframes peace-halo {
+  0%, 100% { transform: scale(0.9); opacity: 0.18; }
+  50%       { transform: scale(1.04); opacity: 0.32; }
+}
+
+/* Floating ₹ drifting away (signalling no more bills) */
+.calc-peace__bill {
+  animation: peace-bill-away 6s ease-in-out infinite;
+  transform-origin: center;
+}
+@keyframes peace-bill-away {
+  0%   { transform: translate(0, 0); opacity: 0; }
+  25%  { transform: translate(0, -6px); opacity: 0.6; }
+  75%  { transform: translate(20px, -30px); opacity: 0; }
+  100% { transform: translate(20px, -30px); opacity: 0; }
+}
+
+@media (max-width: 767px) {
+  .calc-peace { min-height: 100px; padding-block: 4px; }
+  .calc-peace__svg { max-height: 130px; }
+  .calc-peace__caption { font-size: 14px; }
+}
+.calc-mini-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.calc-mini-stat__value {
+  font-family: 'Newsreader', serif;
+  font-size: clamp(18px, 1.8vw, 22px);
+  line-height: 1.1;
+  color: var(--ink);
+}
+.calc-mini-stat__label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+
+/* Why Garv pillars */
+.calc-pillars {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin-top: 2px;
+}
+.calc-pillar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+.calc-pillar svg { color: var(--leaf-deep); flex-shrink: 0; }
+
+/* Slider value pulse when changed */
+.calc-slider-value {
+  font-family: 'Newsreader', serif;
+  font-size: 22px;
+  color: var(--leaf-deep);
+  transition: transform 0.18s ease;
+}
+.calc-slider-value.bump { animation: calc-bump 0.4s ease; }
+@keyframes calc-bump {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.12); color: var(--leaf); }
+  100% { transform: scale(1); color: var(--leaf-deep); }
+}
+
+/* Greener slider thumb for the bill input */
+input[type='range'].is-leaf {
+  background: color-mix(in oklch, var(--leaf) 35%, transparent);
+}
+input[type='range'].is-leaf::-webkit-slider-thumb {
+  background: var(--leaf);
+  border: 2px solid var(--bg);
+  box-shadow: 0 1px 6px color-mix(in oklch, var(--leaf-deep) 35%, transparent);
+}
+
+/* Advanced section toggle */
+.calc-advanced-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  padding: 10px 0;
+  margin-top: 14px;
+  transition: color 0.2s;
+}
+.calc-advanced-toggle:hover { color: var(--ink); }
+.calc-advanced-toggle svg { transition: transform 0.3s ease; }
+.calc-advanced-toggle.open svg { transform: rotate(180deg); }
+
+.calc-advanced {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.45s ease;
+}
+.calc-advanced.open { grid-template-rows: 1fr; }
+.calc-advanced > div { overflow: hidden; }
+
+/* CTA "primary green" button for the calculator */
+.btn-leaf {
+  background: var(--leaf-deep);
+  color: var(--bg);
+  border: 1px solid var(--leaf-deep);
+}
+.btn-leaf:hover { background: var(--leaf); border-color: var(--leaf); }
+
+/* Cumulative-savings sparkline (animated draw on reveal) */
+.calc-sparkline {
+  width: 100%;
+  height: 100px;
+  margin-top: 6px;
+}
+.calc-sparkline__path {
+  fill: none;
+  stroke: var(--leaf-deep);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: calc-draw 2s ease-out forwards;
+}
+.calc-sparkline__fill {
+  fill: url(#calc-grad);
+  opacity: 0.4;
+}
+@keyframes calc-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+@media (max-width: 767px) {
+  .calc-hero {
+    min-height: auto;
+    padding-top: clamp(96px, 13vh, 130px);
+    padding-bottom: clamp(28px, 5vw, 48px);
+  }
+  .calc-mini-stats { grid-template-columns: 1fr; gap: 14px; }
+  .calc-savings__amount { font-size: clamp(48px, 14vw, 72px) !important; }
+  .calc-savings { padding: 24px; }
 }
 
 /* Shorter laptop screens — tighten further */

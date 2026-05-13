@@ -599,9 +599,12 @@ function Calculator() {
             <p style={{ marginTop: 14, fontSize: 12, color: 'color-mix(in oklch, var(--bg) 38%, transparent)', lineHeight: 1.5 }}>
               * Estimates based on average Indian solar irradiation (5.0–5.5 kWh/m²/day) and typical DISCOM tariff rates. Actual savings vary by state and consumption pattern.
             </p>
-            <div style={{ marginTop: 20 }}>
-              <a href="#contact" className="btn" style={{ background: 'var(--ochre)', color: 'var(--bg)', borderColor: 'var(--ochre)' }}>
-                Get a Detailed Proposal <Arrow />
+            <div style={{ marginTop: 20, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+              <a href="/calculator" className="btn" style={{ background: 'var(--ochre)', color: 'var(--bg)', borderColor: 'var(--ochre)' }}>
+                Open detailed calculator <Arrow />
+              </a>
+              <a href="#contact" className="btn btn-ghost" style={{ borderColor: 'color-mix(in oklch, var(--bg) 25%, transparent)', color: 'var(--bg)' }}>
+                Get a proposal
               </a>
             </div>
           </Reveal>

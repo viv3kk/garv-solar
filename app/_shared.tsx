@@ -158,6 +158,7 @@ const NAV_LINKS: { label: string; href: string }[] = [
   { label: 'Home Solar', href: '/home-solar' },
   { label: 'Commercial', href: '/commercial-solar' },
   { label: 'Projects', href: '/#projects' },
+  { label: 'Calculator', href: '/calculator' },
   { label: 'FAQs', href: '/faqs' },
   { label: 'Contact', href: '/#contact' },
 ]
@@ -340,7 +341,7 @@ export function Footer() {
             {[
               { label: 'About', href: '/#about' },
               { label: 'Projects', href: '/#projects' },
-              { label: 'Calculator', href: '/#calculator' },
+              { label: 'Calculator', href: '/calculator' },
               { label: 'FAQs', href: '/faqs' },
               { label: 'Contact', href: '/#contact' },
             ].map(({ label, href }) => (
