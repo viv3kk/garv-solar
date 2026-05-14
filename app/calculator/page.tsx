@@ -542,10 +542,12 @@ function CalculatorPage() {
 
   const st = STATES[stateCode]
 
+  const segmentTariff = st.tariff[segment]
+
   const effectiveUnits = useMemo(() => {
-    if (inputMode === 'bill') return billToUnits(monthlyBill, st.tariff)
+    if (inputMode === 'bill') return billToUnits(monthlyBill, segmentTariff)
     return monthlyUnits
-  }, [inputMode, monthlyBill, monthlyUnits, st.tariff])
+  }, [inputMode, monthlyBill, monthlyUnits, segmentTariff])
 
   // Residential cannot use OPEX
   const effectiveFinancing: Financing =
@@ -667,7 +669,7 @@ function CalculatorPage() {
                         .map(([code, info]) => ({
                           value: code,
                           label: info.name,
-                          meta: `₹${info.tariff}/unit`,
+                          meta: `₹${info.tariff[segment]}/unit`,
                         }))}
                     />
                   </div>
@@ -1182,9 +1184,9 @@ function CalculatorPage() {
           <a href="/#contact" className="btn btn-leaf btn-arrow">
             Talk to an engineer
           </a>
-          <button onClick={() => window.print()} className="btn btn-ghost">
+          {/* <button onClick={() => window.print()} className="btn btn-ghost">
             Print / save PDF
-          </button>
+          </button> */}
         </div>
       </div>
     )

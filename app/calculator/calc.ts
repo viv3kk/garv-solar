@@ -121,7 +121,7 @@ export function calculate(input: CalcInput): CalcResult {
   const netCost   = Math.max(0, grossCost - subsidy)
 
   // 4) Tariff & savings projection
-  const tariff = st.tariff
+  const tariff = st.tariff[input.segment]
   const projection: YearRow[] = []
   let cumulative = 0
   let lifetimeKwh = 0
