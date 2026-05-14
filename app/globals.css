@@ -87,7 +87,12 @@
 /* ─── Base Reset ───────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  /* Belt-and-braces — body already has overflow-x: hidden, but some
+     mobile browsers honour overflow on the root <html> instead. */
+  overflow-x: hidden;
+}
 
 body {
   font-family: 'IBM Plex Sans', sans-serif;
@@ -1172,12 +1177,14 @@ input[type='range']::-webkit-slider-thumb {
 /* Fixed min-height so the rotating message can't change the savings card
    height between renders — eliminates layout shift when the slider moves. */
 .hindi-hook {
-  margin-top: 4px;
-  padding: 4px 2px;
+  margin-top: 2px;
+  padding: 2px 2px;
   position: relative;
-  min-height: 60px;
+  min-height: 56px;
   display: flex;
   align-items: center;
+  justify-content: center;
+  width: 100%;
 }
 .hindi-hook__content {
   width: 100%;
@@ -1202,7 +1209,9 @@ input[type='range']::-webkit-slider-thumb {
   to   { opacity: 1; transform: translateX(0); }
 }
 
-/* Layout — two columns on desktop, stack on mobile */
+/* Layout — two columns on desktop, stack on mobile.
+   Both cards stay equal height. The input card adds an internal scroll
+   when "advanced options" pushes its content beyond the savings column. */
 .calc-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
@@ -1212,17 +1221,40 @@ input[type='range']::-webkit-slider-thumb {
   z-index: 2;
   margin-top: clamp(18px, 2.4vh, 32px);
 }
-/* Make the Reveal wrappers fill their grid cell so both cards equalise height */
 .calc-layout > .reveal {
   display: flex;
+  min-height: 0;
 }
 .calc-layout > .reveal > .calc-card,
 .calc-layout > .reveal > .calc-savings {
   flex: 1;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+/* The input card scrolls internally when content overflows the row height —
+   keeps the calculator pinned to the viewport when advanced options open. */
+.calc-layout > .reveal:first-child > .calc-card {
+  max-height: 64vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklch, var(--ink) 20%, transparent) transparent;
+}
+.calc-layout > .reveal:first-child > .calc-card::-webkit-scrollbar { width: 8px; }
+.calc-layout > .reveal:first-child > .calc-card::-webkit-scrollbar-track { background: transparent; }
+.calc-layout > .reveal:first-child > .calc-card::-webkit-scrollbar-thumb {
+  background: color-mix(in oklch, var(--ink) 18%, transparent);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 @media (max-width: 900px) {
   .calc-layout { grid-template-columns: 1fr; }
+  .calc-layout > .reveal:first-child > .calc-card {
+    max-height: none;
+    overflow-y: visible;
+  }
 }
 
 /* ─── Modern form controls (no green — green stays on the savings side) ── */
@@ -1267,78 +1299,349 @@ input[type='range']::-webkit-slider-thumb {
 }
 .calc-select:hover .calc-select__chevron { color: var(--ink); }
 
-/* ─── Accordion step-card (wizard) ───────────────────────────────────── */
-.step-card {
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.32);
-  border: 1px solid rgba(255, 255, 255, 0.45);
-  margin-bottom: 8px;
-  overflow: hidden;
-  transition: background 0.22s ease, border-color 0.22s ease;
+/* ─── Inline input rows (replaces the wizard accordion) ───────────────── */
+.calc-row {
+  margin-top: 18px;
 }
-.step-card.is-open {
-  background: rgba(255, 255, 255, 0.58);
-  border-color: rgba(255, 255, 255, 0.7);
-  box-shadow: 0 6px 18px -10px rgba(0, 0, 0, 0.08);
-}
-.step-card__header {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  text-align: left;
-  font-family: inherit;
-  color: inherit;
-}
-.step-card__num {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: color-mix(in oklch, var(--ink) 9%, transparent);
-  color: var(--ink-soft);
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 10px;
-  font-weight: 500;
-  flex-shrink: 0;
-}
-.step-card.is-open .step-card__num {
-  background: var(--ink);
-  color: var(--bg);
-}
-.step-card__title {
+.calc-row:first-child { margin-top: 0; }
+
+.calc-row__label {
   font-family: 'Newsreader', serif;
   font-size: 16px;
   line-height: 1.2;
   color: var(--ink);
-  flex: 1;
+  margin-bottom: 10px;
 }
-.step-card__summary {
+
+/* Inline label that hosts a control next to the text (e.g. toggle switch) */
+.calc-inline-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Secondary text link inside the calculator savings card */
+.calc-link-secondary {
   font-family: 'IBM Plex Sans', sans-serif;
-  font-size: 13px;
+  font-size: 13.5px;
+  font-weight: 500;
   color: var(--ink-soft);
-  margin-left: auto;
-  margin-right: 8px;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklch, var(--ink) 25%, transparent);
+  text-underline-offset: 4px;
+  cursor: pointer;
+  transition: color 0.18s, text-decoration-color 0.18s;
+  white-space: nowrap;
+  background: none;
+  border: none;
+  padding: 6px 0;
 }
-.step-card__chevron {
+.calc-link-secondary:hover {
+  color: var(--ink);
+  text-decoration-color: var(--ink);
+}
+
+/* Row variant: label and control on the same line, label flush-left */
+.calc-row--inline {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.calc-row--inline .calc-row__inline-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   color: var(--ink-mute);
-  transition: transform 0.22s ease;
+  flex-shrink: 0;
+  line-height: 1.2;
+}
+.calc-row--inline .combo { flex: 1; min-width: 0; }
+@media (max-width: 520px) {
+  .calc-row--inline {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .calc-row--inline .calc-row__inline-label { margin-bottom: 0; }
+}
+
+/* ─── Searchable combobox (shadcn-style trigger + popover with search) ── */
+.combo {
+  position: relative;
+  width: 100%;
+}
+.combo__trigger {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in oklch, var(--ink) 12%, transparent);
+  background: rgba(255, 255, 255, 0.55);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14.5px;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.18s, background 0.18s, box-shadow 0.18s;
+}
+.combo__value { flex: 1; min-width: 0; }
+.combo__meta {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--ink-mute);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.combo__trigger:hover {
+  border-color: color-mix(in oklch, var(--ink) 22%, transparent);
+  background: rgba(255, 255, 255, 0.7);
+}
+.combo__trigger.is-open {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ink) 8%, transparent);
+}
+.combo__value.is-placeholder { color: var(--ink-mute); }
+.combo__chevron {
+  color: var(--ink-mute);
+  transition: transform 0.2s ease;
   flex-shrink: 0;
 }
-.step-card.is-open .step-card__chevron { transform: rotate(180deg); }
-.step-card__body {
-  padding: 4px 14px 14px;
-  animation: step-body-in 0.32s ease;
+.combo__trigger.is-open .combo__chevron { transform: rotate(180deg); }
+
+.combo__popover {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: var(--bg);
+  border: 1px solid color-mix(in oklch, var(--ink) 12%, transparent);
+  border-radius: 14px;
+  box-shadow:
+    0 18px 40px -16px rgba(0, 0, 0, 0.18),
+    0 4px 10px -6px rgba(0, 0, 0, 0.08);
+  padding: 6px;
+  animation: combo-in 0.16s ease;
 }
-@keyframes step-body-in {
+@keyframes combo-in {
   from { opacity: 0; transform: translateY(-4px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+.combo__search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-bottom: 1px solid color-mix(in oklch, var(--ink) 8%, transparent);
+  margin-bottom: 4px;
+}
+.combo__search input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13.5px;
+  color: var(--ink);
+  padding: 4px 0;
+}
+.combo__search input::placeholder { color: var(--ink-mute); }
+.combo__clear {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--ink-mute);
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.combo__clear:hover {
+  background: color-mix(in oklch, var(--ink) 8%, transparent);
+  color: var(--ink);
+}
+
+.combo__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 260px;
+  overflow-y: auto;
+}
+.combo__option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14px;
+  color: var(--ink);
+  user-select: none;
+}
+.combo__option-label { flex: 1; min-width: 0; }
+.combo__option-meta {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11.5px;
+  color: var(--ink-mute);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.combo__option.is-active {
+  background: color-mix(in oklch, var(--ink) 6%, transparent);
+}
+.combo__option.is-selected { color: var(--ochre-deep); font-weight: 500; }
+.combo__option.is-selected .combo__option-meta { color: color-mix(in oklch, var(--ochre-deep) 70%, var(--ink-mute)); }
+.combo__option svg { color: var(--ochre-deep); flex-shrink: 0; }
+.combo__empty {
+  padding: 16px 12px;
+  text-align: center;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  color: var(--ink-mute);
+}
+
+/* ─── Shading pills — darker shade for more shaded sunlight ──────────── */
+.shading-pills {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.shading-pill {
+  padding: 10px 22px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in oklch, var(--ink) 14%, transparent);
+  background: transparent;
+  color: var(--ink-soft);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13.5px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s, border-color 0.18s, transform 0.18s;
+  white-space: nowrap;
+  flex: 1 1 auto;
+}
+.shading-pill:hover { color: var(--ink); }
+.shading-pill:active { transform: scale(0.98); }
+
+/* Active states — visual shade increases with the actual shading level.
+   None stays clear; Partial picks up a soft ochre wash; Heavy uses a
+   mid-ink wash so the colour ramp reads as gentle → moderate. */
+.shading-pill--lvl0.is-active {
+  background: color-mix(in oklch, var(--clay) 10%, var(--bg));
+  border-color: var(--clay);
+  color: var(--clay);
+}
+.shading-pill--lvl1.is-active {
+  background: color-mix(in oklch, var(--ochre) 30%, var(--bg));
+  border-color: var(--ochre);
+  color: var(--ochre-deep);
+}
+.shading-pill--lvl2.is-active {
+  background: color-mix(in oklch, var(--ink) 45%, var(--bg));
+  border-color: color-mix(in oklch, var(--ink) 55%, transparent);
+  color: var(--bg);
+}
+
+/* ─── Property type pills (ochre filled active, ghost outline inactive) ── */
+.property-pills {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.property-pill {
+  padding: 10px 22px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in oklch, var(--ink) 18%, transparent);
+  background: transparent;
+  color: var(--ink-soft);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s, border-color 0.18s, transform 0.18s;
+  white-space: nowrap;
+}
+.property-pill:hover {
+  color: var(--ink);
+  border-color: color-mix(in oklch, var(--ink) 40%, transparent);
+}
+.property-pill:active { transform: scale(0.98); }
+.property-pill.is-active {
+  background: var(--ochre);
+  border-color: var(--ochre);
+  color: #fff;
+  box-shadow: 0 4px 14px -6px color-mix(in oklch, var(--ochre) 50%, transparent);
+}
+.property-pill:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ─── Bill / Units toggle switch (iOS-style with side labels) ─────────── */
+.bill-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+.bill-switch__label {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  color: var(--ink-mute);
+  background: transparent;
+  border: none;
+  padding: 4px 2px;
+  cursor: pointer;
+  transition: color 0.2s;
+  letter-spacing: -0.005em;
+}
+.bill-switch__label.is-active {
+  color: var(--ink);
+  font-weight: 500;
+}
+.bill-switch__label:hover { color: var(--ink); }
+
+.bill-switch__track {
+  width: 40px;
+  height: 22px;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--ink) 12%, transparent);
+  border: none;
+  padding: 0;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.22s ease;
+  flex-shrink: 0;
+}
+.bill-switch__track:hover {
+  background: color-mix(in oklch, var(--ink) 18%, transparent);
+}
+.bill-switch__track.is-on {
+  background: var(--ink);
+}
+.bill-switch__thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.25),
+    0 0 0 0.5px rgba(0, 0, 0, 0.04);
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.bill-switch__track.is-on .bill-switch__thumb {
+  transform: translateX(18px);
 }
 
 /* iOS-style segmented tab control — pill track with floating active chip */
@@ -1407,9 +1710,18 @@ input[type='range']::-webkit-slider-thumb {
     rgba(255, 255, 255, 0.22) 100%);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  /* Centre savings card content horizontally on every viewport */
+  align-items: center;
+  text-align: center;
+  gap: 8px;
   overflow: hidden;
 }
+.calc-savings .eyebrow { justify-content: center; }
+.calc-savings__caption { text-align: center; }
+/* Hindi hook reads as plain centred text — already box-less */
+.calc-savings .hindi-hook { text-align: center; }
+.calc-savings .hindi-hook__hi { text-align: center; }
+.calc-savings .hindi-hook__en { text-align: center; }
 .calc-savings::after {
   content: '';
   position: absolute;
@@ -1458,28 +1770,31 @@ input[type='range']::-webkit-slider-thumb {
 .calc-savings__caption {
   font-size: 13.5px;
   color: var(--ink-soft);
-  margin-top: -4px;
+  margin-top: -2px;
+  max-width: 90%;
+  line-height: 1.45;
 }
 
-/* Mini-stats row inside savings card. The PeaceOfMind illustration above it
-   uses flex: 1 to absorb the breathing space, so this no longer needs
-   margin-top: auto — the order is: result-cluster → peace illustration
-   (expands to fill) → action-cluster (sits naturally at the bottom). */
+/* Mini-stats row — centred vertically when the savings card is stretched
+   taller than its natural content. Pairing margin-top: auto on both
+   .calc-mini-stats and .calc-pillars splits the breathing space evenly so
+   the result cluster (top) and action cluster (bottom) frame a centred
+   mini-stats block in the middle. */
 .calc-mini-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 18px;
   padding-top: 6px;
-  /* margin-top: auto pushes the mini-stats + pillars + CTAs to the bottom of
-     the savings column so the result cluster (eyebrow, amount, caption, hook)
-     stays packed at the top and any extra height becomes a clean gap. */
+  padding-bottom: 24px;
   margin-top: auto;
+  width: 100%;
 }
 
 .calc-mini-stat {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
+  text-align: center;
   gap: 4px;
 }
 .calc-mini-stat__icon {
@@ -1503,21 +1818,37 @@ input[type='range']::-webkit-slider-thumb {
   font-family: 'IBM Plex Sans', sans-serif;
 }
 
-/* Why Garv pillars */
-.calc-pillars {
+/* Trust pillars — relocated below the calculator cards as quiet sub-text.
+   A horizontal centred strip; wraps to two rows on narrow viewports. */
+.calc-trust-pillars {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 12px;
-  margin-top: 2px;
+  justify-content: center;
+  align-items: center;
+  gap: 10px clamp(18px, 2.4vw, 32px);
+  margin-top: clamp(20px, 3vh, 36px);
+  position: relative;
+  z-index: 2;
+  text-align: center;
 }
 .calc-pillar {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
   color: var(--ink-soft);
+  white-space: nowrap;
 }
 .calc-pillar svg { color: var(--leaf-deep); flex-shrink: 0; }
+
+@media (max-width: 767px) {
+  .calc-trust-pillars {
+    gap: 8px 18px;
+    margin-top: 18px;
+  }
+  .calc-pillar { font-size: 12px; }
+}
 
 /* Slider value pulse when changed — neutral ink (green stays on results) */
 .calc-slider-value {
@@ -1609,11 +1940,142 @@ input[type='range'].is-leaf::-webkit-slider-thumb {
   .calc-hero {
     min-height: auto;
     padding-top: clamp(96px, 13vh, 130px);
-    padding-bottom: clamp(28px, 5vw, 48px);
+    /* Leave breathing room at the bottom for the floating savings pill */
+    padding-bottom: 96px;
   }
-  .calc-mini-stats { grid-template-columns: 1fr; gap: 14px; }
+  /* Three stats sit in a horizontal row, each centred */
+  .calc-mini-stats {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    padding-top: 16px;
+  }
+  .calc-mini-stat {
+    align-items: center;
+    text-align: center;
+    gap: 4px;
+  }
+  .calc-mini-stat__icon {
+    margin-bottom: 4px;
+  }
+  .calc-mini-stat__value {
+    font-size: 17px;
+  }
+  .calc-mini-stat__label {
+    font-size: 11px;
+    line-height: 1.3;
+  }
   .calc-savings__amount { font-size: clamp(48px, 14vw, 72px) !important; }
-  .calc-savings { padding: 24px; }
+  .calc-savings { padding: 20px; gap: 12px; }
+
+  /* Hide the trust-pillars row on mobile to reduce crowding — they appear in
+     the homepage hero so the message is preserved sitewide. */
+  .calc-pillars { display: none; }
+
+  /* CTAs stack on mobile — primary button full width, secondary text link below */
+  .calc-savings-ctas {
+    flex-direction: column;
+    width: 100%;
+    gap: 12px;
+    margin-top: 6px;
+    align-items: center;
+  }
+  .calc-savings-ctas .btn-primary {
+    width: 100%;
+    justify-content: center;
+  }
+  .calc-link-secondary {
+    font-size: 12.5px;
+  }
+}
+
+/* ─── Mobile floating savings pill ─────────────────────────────────────
+   On mobile the savings card sits below the form (stacked). This fixed
+   pill keeps the headline result visible at the bottom of the viewport
+   while the user interacts with the form, and updates live. */
+.calc-mobile-pill { display: none; }
+
+@media (max-width: 900px) {
+  .calc-mobile-pill {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    position: fixed;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+    left: 12px;
+    right: 12px;
+    z-index: 90;
+    padding: 10px 14px 10px 18px;
+    background: rgba(255, 255, 255, 0.86);
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    box-shadow:
+      0 10px 26px -10px rgba(0, 0, 0, 0.2),
+      0 2px 6px -2px rgba(0, 0, 0, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    animation: pill-in 0.42s ease;
+  }
+  @keyframes pill-in {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .calc-mobile-pill__info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .calc-mobile-pill__label {
+    font-size: 9.5px;
+    color: var(--ink-mute);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .calc-mobile-pill__amount {
+    font-family: 'Newsreader', serif;
+    font-size: 22px;
+    color: var(--leaf-deep);
+    line-height: 1.05;
+    margin-top: 1px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    transition: transform 0.18s ease;
+  }
+  .calc-mobile-pill__amount-suffix {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px;
+    color: var(--ink-mute);
+    margin-left: 5px;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+  }
+  .calc-mobile-pill__amount.is-bump {
+    animation: pill-bump 0.45s ease;
+  }
+  @keyframes pill-bump {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.08); }
+    100% { transform: scale(1); }
+  }
+  .calc-mobile-pill__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 12px;
+    background: var(--ink);
+    color: var(--bg);
+    padding: 10px 14px;
+    border-radius: 999px;
+    text-decoration: none;
+    white-space: nowrap;
+    font-weight: 500;
+    transition: opacity 0.18s, transform 0.18s;
+  }
+  .calc-mobile-pill__cta:active { transform: scale(0.96); }
 }
 
 /* Shorter laptop screens — tighten further */
@@ -1839,5 +2301,244 @@ input[type='range'].is-leaf::-webkit-slider-thumb {
   /* "Lifetime support" is the 5th item — span full width on its own row */
   .hero-feature:nth-child(5) {
     grid-column: 1 / -1;
+  }
+}
+
+/* ─── Font Lab Tool ─────────────────────────────────────────────────────
+   Floating Aa button (bottom-right) opens a panel. When the user picks
+   fonts, `body[data-fontlab="on"]` flips on and these rules override the
+   site's default fonts via three CSS variables.
+
+   Matches CSS classes (.h-display, .eyebrow, etc.) AND inline styles that
+   reference 'Newsreader', 'IBM Plex Sans' or 'IBM Plex Mono' so the
+   override works with the heavy inline-styling used across the codebase. */
+body[data-fontlab="on"] {
+  font-family: var(--font-body-lab) !important;
+}
+
+body[data-fontlab="on"] .h-display,
+body[data-fontlab="on"] .h-section,
+body[data-fontlab="on"] .h-card,
+body[data-fontlab="on"] .font-display,
+body[data-fontlab="on"] .stat-big,
+body[data-fontlab="on"] [style*="Newsreader"] {
+  font-family: var(--font-display-lab) !important;
+}
+
+body[data-fontlab="on"] .eyebrow,
+body[data-fontlab="on"] .font-mono,
+body[data-fontlab="on"] .tag-pill,
+body[data-fontlab="on"] [style*="Plex Mono"],
+body[data-fontlab="on"] [style*="IBM Plex Mono"] {
+  font-family: var(--font-mono-lab) !important;
+}
+
+/* Make sure inline-styled Plex Sans elements pick up the body lab font */
+body[data-fontlab="on"] [style*="Plex Sans"],
+body[data-fontlab="on"] [style*="IBM Plex Sans"] {
+  font-family: var(--font-body-lab) !important;
+}
+
+/* Floating Aa toggle button */
+.fontlab-fab {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 84px);
+  right: 16px;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--bg);
+  border: 1px solid color-mix(in oklch, var(--bg) 14%, transparent);
+  cursor: pointer;
+  font-family: 'Newsreader', serif;
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 10px 26px -10px rgba(0, 0, 0, 0.35),
+    0 2px 6px -2px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  transition: transform 0.18s, box-shadow 0.18s;
+}
+.fontlab-fab:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 14px 32px -10px rgba(0, 0, 0, 0.45),
+    0 4px 8px -2px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+.fontlab-fab:active { transform: scale(0.97); }
+
+/* Slide-in panel */
+.fontlab-panel {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 138px);
+  right: 16px;
+  width: 360px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 180px);
+  overflow-y: auto;
+  background: var(--bg);
+  border: 1px solid var(--rule);
+  border-radius: 18px;
+  padding: 18px;
+  z-index: 9999;
+  box-shadow:
+    0 24px 60px -20px rgba(0, 0, 0, 0.28),
+    0 6px 14px -6px rgba(0, 0, 0, 0.12);
+  font-family: 'IBM Plex Sans', sans-serif;
+  animation: fontlab-in 0.2s ease;
+}
+@keyframes fontlab-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.fontlab-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.fontlab-panel__title {
+  font-family: 'Newsreader', serif;
+  font-size: 18px;
+  color: var(--ink);
+}
+.fontlab-panel__close {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: color-mix(in oklch, var(--ink) 6%, transparent);
+  color: var(--ink-soft);
+  cursor: pointer;
+  font-size: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.fontlab-panel__close:hover {
+  background: color-mix(in oklch, var(--ink) 12%, transparent);
+  color: var(--ink);
+}
+
+.fontlab-panel__section {
+  margin-bottom: 14px;
+}
+.fontlab-panel__label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  margin-bottom: 8px;
+}
+
+.fontlab-panel__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.fontlab-chip {
+  padding: 6px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--rule);
+  background: transparent;
+  color: var(--ink-soft);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.fontlab-chip:hover { color: var(--ink); border-color: var(--ink-mute); }
+.fontlab-chip.is-active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--bg);
+}
+
+.fontlab-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+.fontlab-picker__label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+.fontlab-picker select {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  padding: 10px 36px 10px 12px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in oklch, var(--ink) 10%, transparent);
+  background: var(--bg-warm) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14' fill='none'><path d='M3 5.5 L7 9.5 L11 5.5' stroke='%23666' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>") no-repeat right 12px center;
+  font-size: 14px;
+  color: var(--ink);
+  cursor: pointer;
+}
+.fontlab-picker select:hover { border-color: var(--ink-mute); }
+.fontlab-picker select:focus { outline: none; border-color: var(--ink); }
+
+.fontlab-panel__footer {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+.fontlab-btn {
+  flex: 1;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: transparent;
+  border: 1px solid var(--rule);
+  color: var(--ink);
+  cursor: pointer;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 12.5px;
+  font-weight: 500;
+}
+.fontlab-btn:hover { border-color: var(--ink-mute); background: color-mix(in oklch, var(--ink) 3%, transparent); }
+.fontlab-btn--hide { color: var(--ink-mute); }
+
+.fontlab-panel__hint {
+  margin-top: 12px;
+  font-size: 11px;
+  color: var(--ink-mute);
+  font-family: 'IBM Plex Sans', sans-serif;
+  text-align: center;
+}
+.fontlab-panel__hint code {
+  font-family: 'IBM Plex Mono', monospace;
+  background: color-mix(in oklch, var(--ink) 6%, transparent);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 10.5px;
+}
+
+/* Smaller FAB on narrow screens so it doesn't collide with the mobile pill */
+@media (max-width: 767px) {
+  .fontlab-fab {
+    width: 38px;
+    height: 38px;
+    font-size: 15px;
+    top: calc(env(safe-area-inset-top, 0px) + 76px);
+    right: 12px;
+  }
+  .fontlab-panel {
+    top: calc(env(safe-area-inset-top, 0px) + 122px);
+    right: 12px;
+    width: calc(100vw - 24px);
+    padding: 14px;
   }
 }

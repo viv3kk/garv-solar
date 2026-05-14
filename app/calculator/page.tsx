@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Nav, Footer, Eyebrow, Reveal, Arrow } from '../_shared'
 import { calculate, billToUnits } from './calc'
 import {
@@ -226,12 +227,19 @@ function Flower({ style }: { style?: React.CSSProperties }) {
 }
 
 // ─── Background variants ─────────────────────────────────────────────────────
-// Change BG_VARIANT below to preview each option:
+// Background variants (controllable via ?bg=<variant> URL param):
 //   'sunrise'  — warm sun, light beams, sparkles, drifting clouds
 //   'flow'     — animated dashed power lines + travelling green pulses
-//   'garden'   — soft sky-sun + drifting leaves and petals
+//   'garden'   — soft sky-sun + drifting leaves and petals  (default)
 type BgVariant = 'sunrise' | 'flow' | 'garden'
-const BG_VARIANT: BgVariant = 'sunrise'
+const BG_VARIANTS: BgVariant[] = ['sunrise', 'flow', 'garden']
+const BG_DEFAULT: BgVariant = 'sunrise'
+
+function parseBgVariant(raw: string | null): BgVariant {
+  if (!raw) return BG_DEFAULT
+  const normalised = raw.toLowerCase() as BgVariant
+  return BG_VARIANTS.includes(normalised) ? normalised : BG_DEFAULT
+}
 
 function BackgroundSunrise() {
   return (
@@ -341,9 +349,9 @@ function BackgroundGarden() {
   )
 }
 
-function CalculatorBackground() {
-  if (BG_VARIANT === 'flow') return <BackgroundFlow />
-  if (BG_VARIANT === 'garden') return <BackgroundGarden />
+function CalculatorBackground({ variant }: { variant: BgVariant }) {
+  if (variant === 'flow') return <BackgroundFlow />
+  if (variant === 'garden') return <BackgroundGarden />
   return <BackgroundSunrise />
 }
 
@@ -501,6 +509,10 @@ function TreeStatIcon() {
 
 // ─── Page ────────────────────────────────────────────────────────────────────
 export default function CalculatorPage() {
+  // Background variant — driven by ?bg=<variant> URL param
+  const searchParams = useSearchParams()
+  const bgVariant = parseBgVariant(searchParams.get('bg'))
+
   // Essential inputs
   const [segment, setSegment] = useState<Segment>('residential')
   const [stateCode, setStateCode] = useState('RJ')
@@ -510,9 +522,12 @@ export default function CalculatorPage() {
 
   // Advanced inputs
   const [advancedOpen, setAdvancedOpen] = useState(false)
-  // Wizard: which question is expanded (1, 2, 3 or null for all collapsed)
-  const [openStep, setOpenStep] = useState<1 | 2 | 3 | null>(1)
-  const toggleStep = (s: 1 | 2 | 3) => setOpenStep((cur) => (cur === s ? null : s))
+  const advancedRef = useRef<HTMLDivElement>(null)
+  const advancedEndRef = useRef<HTMLDivElement>(null)
+  const advancedToggleRef = useRef<HTMLButtonElement>(null)
+  /** Ref on the .calc-card (the overflow-y: auto container). Used to scroll
+   *  the advanced section into view internally — without moving the window. */
+  const cardRef = useRef<HTMLDivElement>(null)
   const [roofSqft, setRoofSqft] = useState(500)
   const [shading, setShading] = useState<Shading>('none')
   const [financing, setFinancing] = useState<Financing>('cash')
@@ -590,18 +605,15 @@ export default function CalculatorPage() {
         {/* HERO — calculator + huge savings number                             */}
         {/* ────────────────────────────────────────────────────────────────── */}
         <section className="calc-hero">
-          <CalculatorBackground />
+          <CalculatorBackground variant={bgVariant} />
 
           <div className="container-site" style={{ position: 'relative', zIndex: 3 }}>
             <Reveal>
               <div style={{ textAlign: 'center', maxWidth: 720, marginInline: 'auto' }}>
-                <p className="eyebrow" style={{ justifyContent: 'center', color: 'var(--leaf-deep)' }}>
-                  Step into the sun
-                </p>
                 <h1
                   className="h-section"
                   style={{
-                    marginTop: 8,
+                    marginTop: 0,
                     fontSize: 'clamp(24px, 2.8vw, 36px)',
                     lineHeight: 1.12,
                   }}
@@ -615,70 +627,68 @@ export default function CalculatorPage() {
             <div className="calc-layout">
               {/* ─── LEFT: friendly input card ─── */}
               <Reveal>
-                <div className="calc-card">
-                  {/* Tab control — segment lives at the top as iOS-style tabs */}
+                <div className="calc-card" ref={cardRef}>
+                  {/* Property type — ochre pills with uppercase mono labels */}
                   <div style={{ marginBottom: 18 }}>
-                    <Tabs
+                    <p
+                      style={{
+                        fontFamily: 'IBM Plex Mono, monospace',
+                        fontSize: 11,
+                        letterSpacing: '0.16em',
+                        textTransform: 'uppercase',
+                        color: 'var(--ink-mute)',
+                        marginBottom: 10,
+                      }}
+                    >
+                      Property type
+                    </p>
+                    <PropertyPills
                       value={segment}
                       onChange={(v) => setSegment(v as Segment)}
                       options={[
-                        { value: 'residential', label: 'My home' },
-                        { value: 'commercial', label: 'My business' },
-                        { value: 'industrial', label: 'My factory' },
+                        { value: 'residential', label: 'Residential' },
+                        { value: 'commercial', label: 'Commercial' },
+                        // { value: 'industrial', label: 'Industrial' },
                       ]}
                     />
                   </div>
 
-                  {/* Step 1: State */}
-                  <StepCard
-                    step={1}
-                    title="Where do you live?"
-                    summary={st.name}
-                    isOpen={openStep === 1}
-                    onToggle={() => toggleStep(1)}
-                  >
-                    <div className="calc-select">
-                      <select
-                        value={stateCode}
-                        onChange={(e) => setStateCode(e.target.value)}
-                        aria-label="State"
-                      >
-                        {Object.entries(STATES)
-                          .sort(([, a], [, b]) => a.name.localeCompare(b.name))
-                          .map(([code, info]) => (
-                            <option key={code} value={code}>
-                              {info.name}
-                            </option>
-                          ))}
-                      </select>
-                      <svg className="calc-select__chevron" width="14" height="14" viewBox="0 0 14 14" aria-hidden fill="none">
-                        <path d="M3 5.5 L7 9.5 L11 5.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </div>
-                    <Hint>
-                      ₹{st.tariff}/unit · sunlight {st.gh} kWh/m²/day
-                    </Hint>
-                  </StepCard>
+                  {/* All three inputs always visible, inline label: value layout */}
 
-                  {/* Step 2: Monthly bill / units */}
-                  <StepCard
-                    step={2}
-                    title="What's your monthly bill?"
-                    summary={inputMode === 'bill' ? fmtRupees(monthlyBill) : `${monthlyUnits} units`}
-                    isOpen={openStep === 2}
-                    onToggle={() => toggleStep(2)}
-                  >
-                    <Tabs
-                      value={inputMode}
-                      onChange={(v) => setInputMode(v as InputMode)}
-                      options={[
-                        { value: 'bill', label: 'I know my bill (₹)' },
-                        { value: 'units', label: 'I know my units (kWh)' },
-                      ]}
+                  {/* State — label inline with select; tariff sits in the trigger */}
+                  <div className="calc-row calc-row--inline">
+                    <span className="calc-row__inline-label">Where do you live?</span>
+                    <SearchableSelect
+                      value={stateCode}
+                      onChange={setStateCode}
+                      ariaLabel="State"
+                      options={Object.entries(STATES)
+                        .sort(([, a], [, b]) => a.name.localeCompare(b.name))
+                        .map(([code, info]) => ({
+                          value: code,
+                          label: info.name,
+                          meta: `₹${info.tariff}/unit`,
+                        }))}
                     />
+                  </div>
 
+                  {/* Bill / Units — toggle sits inline next to the slider label */}
+                  <div className="calc-row">
                     {inputMode === 'bill' ? (
                       <FriendlySlider
+                        label={
+                          <span className="calc-inline-label">
+                            <span>Monthly bill</span>
+                            <ToggleSwitch
+                              value={inputMode}
+                              onChange={(v) => setInputMode(v as InputMode)}
+                              options={[
+                                { value: 'bill',  label: '₹' },
+                                { value: 'units', label: 'kWh' },
+                              ]}
+                            />
+                          </span>
+                        }
                         display={fmtRupees(monthlyBill)}
                         min={500}
                         max={100000}
@@ -690,6 +700,19 @@ export default function CalculatorPage() {
                       />
                     ) : (
                       <FriendlySlider
+                        label={
+                          <span className="calc-inline-label">
+                            <span>Monthly units</span>
+                            <ToggleSwitch
+                              value={inputMode}
+                              onChange={(v) => setInputMode(v as InputMode)}
+                              options={[
+                                { value: 'bill',  label: '₹' },
+                                { value: 'units', label: 'kWh' },
+                              ]}
+                            />
+                          </span>
+                        }
                         display={`${monthlyUnits} units`}
                         min={50}
                         max={5000}
@@ -700,17 +723,12 @@ export default function CalculatorPage() {
                         leaf
                       />
                     )}
-                  </StepCard>
+                  </div>
 
-                  {/* Step 3: Roof area */}
-                  <StepCard
-                    step={3}
-                    title="How much rooftop space?"
-                    summary={`${roofSqft.toLocaleString('en-IN')} sq ft`}
-                    isOpen={openStep === 3}
-                    onToggle={() => toggleStep(3)}
-                  >
+                  {/* Roof area — inline label:value slider */}
+                  <div className="calc-row">
                     <FriendlySlider
+                      label="Rooftop space"
                       display={`${roofSqft.toLocaleString('en-IN')} sq ft`}
                       min={100}
                       max={10000}
@@ -719,29 +737,80 @@ export default function CalculatorPage() {
                       onChange={setRoofSqft}
                       bump={bump}
                     />
-                  </StepCard>
+                  </div>
 
                   {/* Advanced toggle */}
                   <button
+                    type="button"
+                    ref={advancedToggleRef}
                     className={`calc-advanced-toggle${advancedOpen ? ' open' : ''}`}
-                    onClick={() => setAdvancedOpen((v) => !v)}
+                    onClick={() => {
+                      const opening = !advancedOpen
+                      setAdvancedOpen(opening)
+                      if (opening) {
+                        // Internal-only scroll: nudge the .calc-card overflow
+                        // container down so both "Shading on the roof" and
+                        // "How would you pay" come into view. The window does
+                        // NOT scroll, so the rest of the page stays put.
+                        // We wait one full grid-template-rows animation cycle
+                        // (the .calc-advanced expansion runs ~0.45s) so the
+                        // newly revealed content has its final height.
+                        const card = cardRef.current
+                        if (!card) return
+                        // Detect mobile (column-stack) vs desktop layout.
+                        // On mobile the column-stack means .calc-card has no
+                        // overflow — scroll the window instead, but only just
+                        // enough to bring the advanced fields into view.
+                        const mqMobile = window.matchMedia('(max-width: 900px)').matches
+                        setTimeout(() => {
+                          if (mqMobile) {
+                            advancedRef.current?.scrollIntoView({
+                              behavior: 'smooth',
+                              block: 'center',
+                            })
+                          } else {
+                            // Desktop: scroll the card to its bottom (the
+                            // advanced section is the last child, so this
+                            // shows Shading + How-would-you-pay fully).
+                            card.scrollTo({
+                              top: card.scrollHeight,
+                              behavior: 'smooth',
+                            })
+                          }
+                        }, 460)
+                      }
+                    }}
                   >
                     {advancedOpen ? 'Hide advanced options' : 'Show advanced options'}
                     <Chevron />
                   </button>
 
-                  <div className={`calc-advanced${advancedOpen ? ' open' : ''}`} aria-hidden={!advancedOpen}>
+                  <div
+                    ref={advancedRef}
+                    className={`calc-advanced${advancedOpen ? ' open' : ''}`}
+                    aria-hidden={!advancedOpen}
+                  >
                     <div>
                       <FieldLabel>Shading on the roof</FieldLabel>
-                      <Segmented
-                        value={shading}
-                        onChange={(v) => setShading(v as Shading)}
-                        options={[
-                          { value: 'none', label: 'None' },
-                          { value: 'partial', label: 'Partial' },
-                          { value: 'heavy', label: 'Heavy' },
-                        ]}
-                      />
+                      <div className="shading-pills">
+                        {([
+                          { value: 'none',    label: 'None',    level: 0 },
+                          { value: 'partial', label: 'Partial', level: 1 },
+                          { value: 'heavy',   label: 'Heavy',   level: 2 },
+                        ] as const).map((o) => {
+                          const active = shading === o.value
+                          return (
+                            <button
+                              key={o.value}
+                              type="button"
+                              onClick={() => setShading(o.value as Shading)}
+                              className={`shading-pill shading-pill--lvl${o.level}${active ? ' is-active' : ''}`}
+                            >
+                              {o.label}
+                            </button>
+                          )
+                        })}
+                      </div>
 
                       <FieldLabel>How would you pay?</FieldLabel>
                       <Segmented
@@ -774,6 +843,9 @@ export default function CalculatorPage() {
                           <Hint>Indicative rate {(loanRate * 100).toFixed(1)}% p.a.</Hint>
                         </div>
                       )}
+                      {/* Scroll sentinel — sits at the bottom of the expanded
+                          advanced panel so scrollIntoView reveals all fields */}
+                      <div ref={advancedEndRef} style={{ height: 1 }} aria-hidden />
                     </div>
                   </div>
                 </div>
@@ -781,8 +853,8 @@ export default function CalculatorPage() {
 
               {/* ─── RIGHT: savings hero card ─── */}
               <Reveal delay={120}>
-                <div className="calc-savings">
-                  <p className="eyebrow" style={{ color: 'var(--leaf-deep)' }}>
+                <div className="calc-savings" id="savings-card">
+                  <p className="eyebrow" style={{ color: 'var(--leaf-deep)', marginBottom: '10px' }}>
                     Every month back in your pocket
                   </p>
                   <p className={`calc-savings__amount${bump ? ' is-bump' : ''}`}>
@@ -834,16 +906,8 @@ export default function CalculatorPage() {
                     </div>
                   </div>
 
-                  {/* Why Garv pillars */}
-                  <div className="calc-pillars">
-                    <span className="calc-pillar"><CheckIcon /> MNRE-registered EPC</span>
-                    <span className="calc-pillar"><CheckIcon /> Tier-1 panels only</span>
-                    <span className="calc-pillar"><CheckIcon /> 5-year free AMC*</span>
-                    <span className="calc-pillar"><CheckIcon /> Pan-India service</span>
-                  </div>
-
-                  <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 6 }}>
-                    <a href="/#contact" className="btn btn-leaf btn-arrow">
+                  <div className="calc-savings-ctas" style={{ display: 'flex', gap: 18, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', marginTop: 6 }}>
+                    <a href="/#contact" className="btn btn-primary btn-arrow">
                       Book a free site visit
                     </a>
                     <a
@@ -852,9 +916,9 @@ export default function CalculatorPage() {
                         e.preventDefault()
                         document.getElementById('detailed')?.scrollIntoView({ behavior: 'smooth' })
                       }}
-                      className="btn btn-ghost"
+                      className="calc-link-secondary"
                     >
-                      See the 25-year picture
+                      See the 25-year picture →
                     </a>
                   </div>
 
@@ -864,6 +928,16 @@ export default function CalculatorPage() {
                 </div>
               </Reveal>
             </div>
+
+            {/* Trust pillars — sit below both cards as quiet sub-text */}
+            <Reveal delay={200}>
+              <div className="calc-trust-pillars">
+                <span className="calc-pillar"><CheckIcon /> MNRE-registered EPC</span>
+                <span className="calc-pillar"><CheckIcon /> Tier-1 panels only</span>
+                <span className="calc-pillar"><CheckIcon /> 5-year free AMC*</span>
+                <span className="calc-pillar"><CheckIcon /> Pan-India service</span>
+              </div>
+            </Reveal>
           </div>
         </section>
 
@@ -1023,6 +1097,29 @@ export default function CalculatorPage() {
             </Reveal>
           </div>
         </section>
+
+        {/* Floating mobile-only savings pill — keeps the result visible while
+            the user interacts with the form above. Updates live, bumps on
+            change, scrolls to the savings card on tap. */}
+        <div className="calc-mobile-pill" aria-live="polite">
+          <div className="calc-mobile-pill__info">
+            <span className="calc-mobile-pill__label">You'd save</span>
+            <span className={`calc-mobile-pill__amount${bump ? ' is-bump' : ''}`}>
+              ₹<TweenNumber value={result.monthlySavingsYr1} />
+              <span className="calc-mobile-pill__amount-suffix">/ mo</span>
+            </span>
+          </div>
+          <a
+            href="#savings-card"
+            className="calc-mobile-pill__cta"
+            onClick={(e) => {
+              e.preventDefault()
+              document.getElementById('savings-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            }}
+          >
+            Details ↓
+          </a>
+        </div>
       </main>
       <Footer />
     </>
@@ -1141,37 +1238,6 @@ function Hint({ children }: { children: React.ReactNode }) {
   return <p style={{ fontSize: 12, color: 'var(--ink-mute)', marginTop: 8, lineHeight: 1.5 }}>{children}</p>
 }
 
-// Accordion-style step card — one question expanded at a time
-function StepCard({
-  step,
-  title,
-  summary,
-  isOpen,
-  onToggle,
-  children,
-}: {
-  step: number
-  title: string
-  summary: string
-  isOpen: boolean
-  onToggle: () => void
-  children: React.ReactNode
-}) {
-  return (
-    <div className={`step-card${isOpen ? ' is-open' : ''}`}>
-      <button type="button" className="step-card__header" onClick={onToggle} aria-expanded={isOpen}>
-        <span className="step-card__num">{step}</span>
-        <span className="step-card__title">{title}</span>
-        {!isOpen && <span className="step-card__summary">{summary}</span>}
-        <svg className="step-card__chevron" width="14" height="14" viewBox="0 0 14 14" aria-hidden fill="none">
-          <path d="M3 5.5 L7 9.5 L11 5.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </button>
-      {isOpen && <div className="step-card__body">{children}</div>}
-    </div>
-  )
-}
-
 // iOS-style segmented tab control (pill track, floating active chip)
 function Tabs({
   value,
@@ -1196,6 +1262,228 @@ function Tabs({
           {o.label}
         </button>
       ))}
+    </div>
+  )
+}
+
+// Ochre-pill property type selector
+function PropertyPills({
+  value,
+  onChange,
+  options,
+}: {
+  value: string
+  onChange: (v: string) => void
+  options: { value: string; label: string; disabled?: boolean }[]
+}) {
+  return (
+    <div className="property-pills">
+      {options.map((o) => (
+        <button
+          key={o.value}
+          type="button"
+          disabled={o.disabled}
+          onClick={() => !o.disabled && onChange(o.value)}
+          className={`property-pill${value === o.value ? ' is-active' : ''}`}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+// Searchable popover-style select — in the spirit of shadcn-space/select-08
+function SearchableSelect({
+  value,
+  onChange,
+  options,
+  placeholder = 'Select…',
+  ariaLabel,
+}: {
+  value: string
+  onChange: (v: string) => void
+  options: { value: string; label: string; meta?: string }[]
+  placeholder?: string
+  ariaLabel?: string
+}) {
+  const [open, setOpen] = useState(false)
+  const [query, setQuery] = useState('')
+  const [activeIdx, setActiveIdx] = useState(0)
+  const rootRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const listRef = useRef<HTMLUListElement>(null)
+
+  const selected = options.find((o) => o.value === value)
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    if (!q) return options
+    return options.filter((o) => o.label.toLowerCase().includes(q))
+  }, [options, query])
+
+  // Close on outside click / escape
+  useEffect(() => {
+    if (!open) return
+    const onDown = (e: MouseEvent) => {
+      if (rootRef.current && !rootRef.current.contains(e.target as Node)) setOpen(false)
+    }
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
+    window.addEventListener('mousedown', onDown)
+    window.addEventListener('keydown', onKey)
+    return () => {
+      window.removeEventListener('mousedown', onDown)
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [open])
+
+  // Auto-focus search on open + reset query
+  useEffect(() => {
+    if (open) {
+      setQuery('')
+      setActiveIdx(Math.max(0, options.findIndex((o) => o.value === value)))
+      const t = setTimeout(() => inputRef.current?.focus(), 30)
+      return () => clearTimeout(t)
+    }
+  }, [open, value, options])
+
+  // Keep active item in view
+  useEffect(() => {
+    if (!open) return
+    const el = listRef.current?.querySelector<HTMLLIElement>(`[data-idx="${activeIdx}"]`)
+    el?.scrollIntoView({ block: 'nearest' })
+  }, [activeIdx, open, filtered])
+
+  const handleKey = (e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setActiveIdx((i) => Math.min(i + 1, filtered.length - 1))
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setActiveIdx((i) => Math.max(i - 1, 0))
+    } else if (e.key === 'Enter') {
+      e.preventDefault()
+      const pick = filtered[activeIdx]
+      if (pick) {
+        onChange(pick.value)
+        setOpen(false)
+      }
+    }
+  }
+
+  return (
+    <div className="combo" ref={rootRef}>
+      <button
+        type="button"
+        className={`combo__trigger${open ? ' is-open' : ''}`}
+        onClick={() => setOpen((v) => !v)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label={ariaLabel}
+      >
+        <span className={`combo__value${selected ? '' : ' is-placeholder'}`}>
+          {selected ? selected.label : placeholder}
+        </span>
+        {selected?.meta && <span className="combo__meta">{selected.meta}</span>}
+        <svg className="combo__chevron" width="14" height="14" viewBox="0 0 14 14" aria-hidden fill="none">
+          <path d="M3 5.5 L7 9.5 L11 5.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+
+      {open && (
+        <div className="combo__popover" role="dialog">
+          <div className="combo__search">
+            <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden fill="none" style={{ flexShrink: 0, color: 'var(--ink-mute)' }}>
+              <circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth="1.5" />
+              <path d="M9.5 9.5 L12 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+            <input
+              ref={inputRef}
+              value={query}
+              onChange={(e) => { setQuery(e.target.value); setActiveIdx(0) }}
+              onKeyDown={handleKey}
+              placeholder="Search…"
+              aria-label="Search options"
+            />
+            {query && (
+              <button type="button" onClick={() => setQuery('')} className="combo__clear" aria-label="Clear search">
+                ×
+              </button>
+            )}
+          </div>
+          <ul className="combo__list" ref={listRef} role="listbox">
+            {filtered.length === 0 && (
+              <li className="combo__empty">No matches</li>
+            )}
+            {filtered.map((o, i) => {
+              const isSelected = o.value === value
+              const isActive = i === activeIdx
+              return (
+                <li
+                  key={o.value}
+                  data-idx={i}
+                  className={`combo__option${isActive ? ' is-active' : ''}${isSelected ? ' is-selected' : ''}`}
+                  onMouseEnter={() => setActiveIdx(i)}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => { onChange(o.value); setOpen(false) }}
+                  role="option"
+                  aria-selected={isSelected}
+                >
+                  <span className="combo__option-label">{o.label}</span>
+                  {o.meta && <span className="combo__option-meta">{o.meta}</span>}
+                  {isSelected && (
+                    <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden fill="none">
+                      <path d="M3 7.2 L5.8 9.8 L11 4.4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
+                </li>
+              )
+            })}
+          </ul>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Two-state toggle switch (iOS-style) — labels on either side, sliding thumb
+function ToggleSwitch({
+  value,
+  options,
+  onChange,
+}: {
+  value: string
+  options: [{ value: string; label: string }, { value: string; label: string }]
+  onChange: (v: string) => void
+}) {
+  const [left, right] = options
+  const isRight = value === right.value
+  return (
+    <div className="bill-switch">
+      <button
+        type="button"
+        className={`bill-switch__label${!isRight ? ' is-active' : ''}`}
+        onClick={() => onChange(left.value)}
+      >
+        {left.label}
+      </button>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={isRight}
+        onClick={() => onChange(isRight ? left.value : right.value)}
+        className={`bill-switch__track${isRight ? ' is-on' : ''}`}
+        aria-label={`Toggle between ${left.label} and ${right.label}`}
+      >
+        <span className="bill-switch__thumb" />
+      </button>
+      <button
+        type="button"
+        className={`bill-switch__label${isRight ? ' is-active' : ''}`}
+        onClick={() => onChange(right.value)}
+      >
+        {right.label}
+      </button>
     </div>
   )
 }
@@ -1256,7 +1544,7 @@ function FriendlySlider({
   bump,
   leaf,
 }: {
-  label?: string
+  label?: React.ReactNode
   display: string
   min: number
   max: number

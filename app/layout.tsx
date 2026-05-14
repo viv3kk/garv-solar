@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import FontLabTool from './_font-lab-tool'
 
 export const metadata: Metadata = {
   title: 'Garv Urja Solutions — MNRE Registered Solar EPC Company',
@@ -17,6 +18,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className="grain" suppressHydrationWarning>
         {children}
+        <FontLabTool />
       </body>
     </html>
   )
