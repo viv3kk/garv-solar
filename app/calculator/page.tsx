@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Nav, Footer, Eyebrow, Reveal, Arrow } from '../_shared'
 import { calculate, billToUnits } from './calc'
@@ -508,7 +508,7 @@ function TreeStatIcon() {
 }
 
 // ─── Page ────────────────────────────────────────────────────────────────────
-export default function CalculatorPage() {
+function CalculatorPage() {
   // Background variant — driven by ?bg=<variant> URL param
   const searchParams = useSearchParams()
   const bgVariant = parseBgVariant(searchParams.get('bg'))
@@ -1668,4 +1668,12 @@ const td: React.CSSProperties = {
   padding: '10px',
   fontFamily: 'IBM Plex Sans',
   color: 'var(--ink)',
+}
+
+export default function CalculatorPageWrapper() {
+  return (
+    <Suspense>
+      <CalculatorPage />
+    </Suspense>
+  )
 }
