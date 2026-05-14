@@ -231,7 +231,7 @@ function Flower({ style }: { style?: React.CSSProperties }) {
 //   'flow'     — animated dashed power lines + travelling green pulses
 //   'garden'   — soft sky-sun + drifting leaves and petals
 type BgVariant = 'sunrise' | 'flow' | 'garden'
-const BG_VARIANT: BgVariant = 'garden'
+const BG_VARIANT: BgVariant = 'sunrise'
 
 function BackgroundSunrise() {
   return (
@@ -547,6 +547,38 @@ function Chevron() {
   )
 }
 
+// ─── Mini-stat icons (clock / wallet / tree) ────────────────────────────────
+function ClockStatIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden fill="none"
+      stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 2" />
+    </svg>
+  )
+}
+
+function WalletStatIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden fill="none"
+      stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 7.5A2.5 2.5 0 0 1 5.5 5h11a2.5 2.5 0 0 1 2.5 2.5V8" />
+      <rect x="3" y="8" width="18" height="11" rx="2" />
+      <path d="M21 12.5h-3a1.5 1.5 0 0 0 0 3h3" />
+    </svg>
+  )
+}
+
+function TreeStatIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden fill="none"
+      stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 3 L6 11 H9 L4.5 17 H9 L12 14 L15 17 H19.5 L15 11 H18 Z" />
+      <path d="M12 14 V21" />
+    </svg>
+  )
+}
+
 // ─── Page ────────────────────────────────────────────────────────────────────
 export default function CalculatorPage() {
   // Essential inputs
@@ -661,16 +693,15 @@ export default function CalculatorPage() {
               {/* ─── LEFT: friendly input card ─── */}
               <Reveal>
                 <div className="calc-card">
-                  {/* Segment selector — surfaced at the top to save vertical space.
-                      Acts like a category-tab strip; subsequent questions adapt to it. */}
+                  {/* Tab control — segment lives at the top as iOS-style tabs */}
                   <div style={{ marginBottom: 18 }}>
-                    <Segmented
+                    <Tabs
                       value={segment}
                       onChange={(v) => setSegment(v as Segment)}
                       options={[
-                        { value: 'residential', label: 'MY HOME' },
-                        { value: 'commercial', label: 'MY BUSINESS' },
-                        { value: 'industrial', label: 'MY FACTORY' },
+                        { value: 'residential', label: 'My home' },
+                        { value: 'commercial', label: 'My business' },
+                        { value: 'industrial', label: 'My factory' },
                       ]}
                     />
                   </div>
@@ -701,7 +732,7 @@ export default function CalculatorPage() {
 
                   {/* Step 2: bill or units */}
                   <FriendlyLabel step="2">What's your monthly electricity bill?</FriendlyLabel>
-                  <Segmented
+                  <Tabs
                     value={inputMode}
                     onChange={(v) => setInputMode(v as InputMode)}
                     options={[
@@ -836,12 +867,14 @@ export default function CalculatorPage() {
 
                   <div className="calc-mini-stats">
                     <div className="calc-mini-stat">
+                      <span className="calc-mini-stat__icon"><ClockStatIcon /></span>
                       <span className="calc-mini-stat__value">
                         <TweenNumber value={result.paybackYrs} format={(n) => n.toFixed(1)} /> yrs
                       </span>
                       <span className="calc-mini-stat__label">Payback</span>
                     </div>
                     <div className="calc-mini-stat">
+                      <span className="calc-mini-stat__icon"><WalletStatIcon /></span>
                       <span className="calc-mini-stat__value">
                         <TweenNumber
                           value={result.lifetimeSavings}
@@ -851,10 +884,11 @@ export default function CalculatorPage() {
                       <span className="calc-mini-stat__label">25-yr savings</span>
                     </div>
                     <div className="calc-mini-stat">
+                      <span className="calc-mini-stat__icon"><TreeStatIcon /></span>
                       <span className="calc-mini-stat__value">
                         <TweenNumber value={result.treesEquivalent} /> trees
                       </span>
-                      <span className="calc-mini-stat__label">Lifetime CO₂ offset</span>
+                      <span className="calc-mini-stat__label">CO₂ offset</span>
                     </div>
                   </div>
 
@@ -1122,11 +1156,26 @@ export default function CalculatorPage() {
 
 function FriendlyLabel({ step, children }: { step: string; children: React.ReactNode }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginTop: 16, marginBottom: 8 }}>
-      <span style={{ fontFamily: 'IBM Plex Mono', fontSize: 11, letterSpacing: '0.14em', color: 'var(--leaf-deep)' }}>
-        {step}.
+    <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginTop: 14, marginBottom: 8 }}>
+      <span
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: 20,
+          height: 20,
+          borderRadius: '50%',
+          background: 'color-mix(in oklch, var(--ink) 9%, transparent)',
+          color: 'var(--ink-soft)',
+          fontFamily: 'IBM Plex Mono',
+          fontSize: 10,
+          letterSpacing: 0,
+          fontWeight: 500,
+        }}
+      >
+        {step}
       </span>
-      <span style={{ fontFamily: 'Newsreader', fontSize: 16.5, color: 'var(--ink)' }}>{children}</span>
+      <span style={{ fontFamily: 'Newsreader', fontSize: 17, color: 'var(--ink)' }}>{children}</span>
     </div>
   )
 }
@@ -1148,6 +1197,34 @@ function FieldLabel({ children, inline }: { children: React.ReactNode; inline?: 
 
 function Hint({ children }: { children: React.ReactNode }) {
   return <p style={{ fontSize: 12, color: 'var(--ink-mute)', marginTop: 8, lineHeight: 1.5 }}>{children}</p>
+}
+
+// iOS-style segmented tab control (pill track, floating active chip)
+function Tabs({
+  value,
+  onChange,
+  options,
+}: {
+  value: string
+  onChange: (v: string) => void
+  options: { value: string; label: string; disabled?: boolean }[]
+}) {
+  return (
+    <div className="calc-tabs" role="tablist">
+      {options.map((o) => (
+        <button
+          key={o.value}
+          role="tab"
+          aria-selected={value === o.value}
+          disabled={o.disabled}
+          onClick={() => !o.disabled && onChange(o.value)}
+          className={`calc-tab${value === o.value ? ' is-active' : ''}`}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  )
 }
 
 function Segmented({
@@ -1217,8 +1294,8 @@ function FriendlySlider({
   leaf?: boolean
 }) {
   return (
-    <div style={{ marginTop: label ? 16 : 10 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
+    <div style={{ marginTop: label ? 14 : 6 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
         {label && (
           <span style={{ fontFamily: 'IBM Plex Mono', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--ink-mute)' }}>
             {label}

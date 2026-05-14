@@ -1172,34 +1172,28 @@ input[type='range']::-webkit-slider-thumb {
 /* Fixed min-height so the rotating message can't change the savings card
    height between renders — eliminates layout shift when the slider moves. */
 .hindi-hook {
-  margin-top: 2px;
-  padding: 10px 14px;
-  background: color-mix(in oklch, var(--leaf) 8%, var(--bg));
-  border-left: 3px solid var(--leaf-deep);
-  border-radius: 0 12px 12px 0;
+  margin-top: 4px;
+  padding: 4px 2px;
   position: relative;
-  overflow: hidden;
-  min-height: 72px;
+  min-height: 60px;
   display: flex;
   align-items: center;
 }
 .hindi-hook__content {
   width: 100%;
-}
-.hindi-hook__content {
   animation: hook-in 0.5s ease;
 }
 .hindi-hook__hi {
   font-family: 'Noto Sans Devanagari', 'IBM Plex Sans', system-ui, sans-serif;
-  font-size: 14.5px;
+  font-size: 15.5px;
   color: var(--leaf-deep);
   font-weight: 500;
   line-height: 1.35;
 }
 .hindi-hook__en {
-  font-size: 11px;
+  font-size: 11.5px;
   color: var(--ink-mute);
-  margin-top: 3px;
+  margin-top: 4px;
   font-style: italic;
   font-family: 'IBM Plex Sans', sans-serif;
 }
@@ -1231,7 +1225,9 @@ input[type='range']::-webkit-slider-thumb {
   .calc-layout { grid-template-columns: 1fr; }
 }
 
-/* ─── Styled select with custom chevron ─────────────────────────────── */
+/* ─── Modern form controls (no green — green stays on the savings side) ── */
+
+/* Styled select with custom chevron */
 .calc-select {
   position: relative;
   width: 100%;
@@ -1241,23 +1237,24 @@ input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
   -moz-appearance: none;
   width: 100%;
-  padding: 13px 44px 13px 14px;
+  padding: 13px 44px 13px 16px;
   border-radius: 12px;
-  border: 1px solid var(--rule);
-  background: var(--bg);
+  border: 1px solid color-mix(in oklch, var(--ink) 12%, transparent);
+  background: rgba(255, 255, 255, 0.55);
   font-family: 'IBM Plex Sans', sans-serif;
-  font-size: 14px;
+  font-size: 14.5px;
   color: var(--ink);
   cursor: pointer;
   outline: none;
-  transition: border-color 0.18s, box-shadow 0.18s;
+  transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
 }
 .calc-select select:hover {
-  border-color: color-mix(in oklch, var(--leaf) 40%, var(--rule));
+  border-color: color-mix(in oklch, var(--ink) 22%, transparent);
+  background: rgba(255, 255, 255, 0.7);
 }
 .calc-select select:focus {
-  border-color: var(--leaf-deep);
-  box-shadow: 0 0 0 3px color-mix(in oklch, var(--leaf) 18%, transparent);
+  border-color: var(--ink);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ink) 8%, transparent);
 }
 .calc-select__chevron {
   position: absolute;
@@ -1266,38 +1263,92 @@ input[type='range']::-webkit-slider-thumb {
   transform: translateY(-50%);
   color: var(--ink-mute);
   pointer-events: none;
-  transition: color 0.18s, transform 0.2s;
+  transition: color 0.18s;
 }
-.calc-select:hover .calc-select__chevron {
-  color: var(--leaf-deep);
-}
+.calc-select:hover .calc-select__chevron { color: var(--ink); }
 
-/* Input card — soft, paper-like */
-.calc-card {
-  background: color-mix(in oklch, var(--bg) 92%, transparent);
-  backdrop-filter: blur(8px);
-  border: 1px solid var(--rule);
-  border-radius: 20px;
-  padding: clamp(16px, 2vw, 24px);
-  box-shadow: 0 18px 40px -30px rgba(0, 0, 0, 0.18);
+/* iOS-style segmented tab control — pill track with floating active chip */
+.calc-tabs {
+  display: flex;
+  padding: 4px;
+  background: rgba(0, 0, 0, 0.045);
+  border-radius: 14px;
+  gap: 2px;
+  position: relative;
 }
+.calc-tab {
+  flex: 1 1 0;
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: transparent;
+  border: none;
+  color: var(--ink-soft);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13.5px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+  white-space: nowrap;
+}
+.calc-tab:hover:not(.is-active) { color: var(--ink); }
+.calc-tab.is-active {
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--ink);
+  font-weight: 600;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.08),
+    0 1px 0 rgba(255, 255, 255, 0.9) inset;
+}
+.calc-tab:disabled { opacity: 0.4; cursor: not-allowed; }
 
-/* Savings hero card — the main "wow" surface */
+/* Apple liquid-glass surfaces — translucent white over the animated bg,
+   strong backdrop blur, subtle inner highlight, soft shadow. Colour comes
+   from typography (the leaf-green amount, the icons) not from the surface. */
+.calc-card,
 .calc-savings {
   position: relative;
-  background: linear-gradient(165deg,
-    color-mix(in oklch, var(--leaf-soft) 80%, var(--bg)) 0%,
-    var(--bg) 60%);
-  border: 1px solid color-mix(in oklch, var(--leaf) 30%, var(--rule));
-  border-radius: 20px;
-  padding: clamp(20px, 2.4vw, 30px);
+  border-radius: 24px;
+  padding: clamp(18px, 2.2vw, 26px);
+  background: linear-gradient(180deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 255, 255, 0.22) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(24px) saturate(170%);
+  -webkit-backdrop-filter: blur(24px) saturate(170%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.18),
+    0 20px 44px -22px rgba(0, 0, 0, 0.10),
+    0 4px 10px -6px rgba(0, 0, 0, 0.05);
+  z-index: 1;
+}
+
+/* Savings card — a whisper of leaf tint in the top half plus a soft glow
+   behind the big amount, so it still reads as "result" without becoming
+   a saturated slab. */
+.calc-savings {
+  background: linear-gradient(180deg,
+    color-mix(in oklch, rgba(255, 255, 255, 0.55) 80%, var(--leaf-soft)) 0%,
+    rgba(255, 255, 255, 0.22) 100%);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 14px;
   overflow: hidden;
-  box-shadow:
-    0 30px 60px -30px color-mix(in oklch, var(--leaf-deep) 35%, transparent),
-    0 8px 16px -8px rgba(0, 0, 0, 0.1);
+}
+.calc-savings::after {
+  content: '';
+  position: absolute;
+  top: 32px;
+  left: -10px;
+  width: 360px;
+  height: 200px;
+  background: radial-gradient(ellipse at center,
+    color-mix(in oklch, var(--leaf) 16%, transparent) 0%,
+    transparent 65%);
+  filter: blur(32px);
+  z-index: -1;
+  pointer-events: none;
 }
 
 /* The huge animated number */
@@ -1343,10 +1394,9 @@ input[type='range']::-webkit-slider-thumb {
 .calc-mini-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  padding-top: 14px;
+  gap: 18px;
+  padding-top: 6px;
   margin-top: 4px;
-  border-top: 1px solid color-mix(in oklch, var(--leaf) 18%, var(--rule));
 }
 
 /* ─── Peace-of-mind illustration (fills the breathing space) ───────────── */
@@ -1447,20 +1497,28 @@ input[type='range']::-webkit-slider-thumb {
 .calc-mini-stat {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: 4px;
+}
+.calc-mini-stat__icon {
+  color: var(--ink-soft);
+  margin-bottom: 6px;
+  display: inline-flex;
 }
 .calc-mini-stat__value {
   font-family: 'Newsreader', serif;
-  font-size: clamp(18px, 1.8vw, 22px);
-  line-height: 1.1;
+  font-size: clamp(20px, 2vw, 24px);
+  line-height: 1.05;
   color: var(--ink);
+  font-weight: 500;
+  letter-spacing: -0.005em;
 }
 .calc-mini-stat__label {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  font-size: 12px;
   color: var(--ink-mute);
+  letter-spacing: 0;
+  text-transform: none;
+  font-family: 'IBM Plex Sans', sans-serif;
 }
 
 /* Why Garv pillars */
@@ -1479,28 +1537,29 @@ input[type='range']::-webkit-slider-thumb {
 }
 .calc-pillar svg { color: var(--leaf-deep); flex-shrink: 0; }
 
-/* Slider value pulse when changed */
+/* Slider value pulse when changed — neutral ink (green stays on results) */
 .calc-slider-value {
   font-family: 'Newsreader', serif;
   font-size: 22px;
-  color: var(--leaf-deep);
+  color: var(--ink);
+  font-weight: 500;
   transition: transform 0.18s ease;
 }
 .calc-slider-value.bump { animation: calc-bump 0.4s ease; }
 @keyframes calc-bump {
   0% { transform: scale(1); }
-  40% { transform: scale(1.12); color: var(--leaf); }
-  100% { transform: scale(1); color: var(--leaf-deep); }
+  40% { transform: scale(1.1); color: var(--ochre-deep); }
+  100% { transform: scale(1); color: var(--ink); }
 }
 
-/* Greener slider thumb for the bill input */
+/* Warm ochre slider variant (used to live as is-leaf — now neutral-warm) */
 input[type='range'].is-leaf {
-  background: color-mix(in oklch, var(--leaf) 35%, transparent);
+  background: color-mix(in oklch, var(--ochre) 28%, transparent);
 }
 input[type='range'].is-leaf::-webkit-slider-thumb {
-  background: var(--leaf);
+  background: var(--ochre);
   border: 2px solid var(--bg);
-  box-shadow: 0 1px 6px color-mix(in oklch, var(--leaf-deep) 35%, transparent);
+  box-shadow: 0 1px 6px color-mix(in oklch, var(--ochre-deep) 30%, transparent);
 }
 
 /* Advanced section toggle */
