@@ -347,89 +347,6 @@ function CalculatorBackground() {
   return <BackgroundSunrise />
 }
 
-// ─── Peace-of-mind illustration (inline SVG with CSS animation) ─────────────
-// Stylised scene: sun on the left, three pulsing energy waves reaching across
-// to a small house with solar panels on the right. Designed to occupy the
-// breathing space between the Hindi hook and the mini-stats inside the
-// savings card.
-function PeaceOfMind() {
-  return (
-    <div className="calc-peace" aria-hidden>
-      <svg className="calc-peace__svg" viewBox="0 0 380 150" preserveAspectRatio="xMidYMid meet">
-        {/* Soft ground/horizon */}
-        <ellipse cx="190" cy="148" rx="180" ry="6" fill="var(--leaf-soft)" opacity="0.6" />
-
-        {/* Sun group */}
-        <g className="calc-peace__sun">
-          <circle cx="68" cy="60" r="20" fill="url(#peace-sun-grad)" />
-          <circle cx="68" cy="60" r="14" fill="#FFC95B" />
-          <ellipse cx="62" cy="56" rx="5" ry="3" fill="#FFF4C6" opacity="0.7" />
-        </g>
-        <g className="calc-peace__rays">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <line
-              key={i}
-              x1="68" y1="34"
-              x2="68" y2="42"
-              stroke="#E89A2D"
-              strokeWidth="2.4"
-              strokeLinecap="round"
-              transform={`rotate(${i * 45} 68 60)`}
-            />
-          ))}
-        </g>
-
-        {/* Three pulsing energy waves from sun toward house */}
-        <g className="calc-peace__waves" fill="none" strokeLinecap="round">
-          <path d="M88 60 Q188 30 282 76" stroke="var(--leaf-deep)" strokeWidth="2" className="calc-peace__wave wave-1" />
-          <path d="M88 70 Q188 60 282 92" stroke="var(--leaf-deep)" strokeWidth="2" className="calc-peace__wave wave-2" />
-          <path d="M88 80 Q188 88 282 108" stroke="var(--leaf-deep)" strokeWidth="2" className="calc-peace__wave wave-3" />
-        </g>
-
-        {/* House group */}
-        <g className="calc-peace__house">
-          {/* Body */}
-          <rect x="270" y="92" width="86" height="50" rx="2" fill="var(--bg-warm)" stroke="var(--ink)" strokeOpacity="0.18" strokeWidth="1" />
-          {/* Roof */}
-          <polygon points="262,92 313,58 364,92" fill="var(--clay)" />
-          {/* Solar panel on roof — angled */}
-          <polygon points="284,84 312,65 312,72 287,90" fill="var(--ink)" />
-          <polygon points="312,65 340,84 337,90 312,72" fill="color-mix(in oklch, var(--ink) 80%, var(--bg))" />
-          {/* Panel grid lines */}
-          <line x1="298" y1="76" x2="296" y2="83" stroke="#fff" strokeOpacity="0.18" />
-          <line x1="326" y1="76" x2="328" y2="83" stroke="#fff" strokeOpacity="0.18" />
-          {/* Door */}
-          <rect x="307" y="118" width="14" height="24" fill="var(--ink)" opacity="0.85" />
-          <circle cx="318" cy="130" r="0.8" fill="var(--ochre)" />
-          {/* Window */}
-          <rect x="332" y="105" width="14" height="14" fill="var(--ochre)" opacity="0.7" />
-          <line x1="339" y1="105" x2="339" y2="119" stroke="var(--bg)" strokeWidth="0.6" />
-          <line x1="332" y1="112" x2="346" y2="112" stroke="var(--bg)" strokeWidth="0.6" />
-          {/* Calm halo */}
-          <circle cx="313" cy="100" r="58" fill="none" stroke="var(--leaf-deep)" strokeOpacity="0.18" strokeWidth="1" className="calc-peace__halo" />
-        </g>
-
-        {/* Drifting peace symbol (₹ fading away) */}
-        <g className="calc-peace__bill">
-          <text x="200" y="40" fontFamily="Newsreader" fontSize="14" fill="var(--ink-mute)" opacity="0.55">₹</text>
-        </g>
-
-        <defs>
-          <radialGradient id="peace-sun-grad" cx="50%" cy="50%" r="50%">
-            <stop offset="0%"  stopColor="#FFEFA8" />
-            <stop offset="60%" stopColor="#FFC95B" />
-            <stop offset="100%" stopColor="#E89A2D" stopOpacity="0.5" />
-          </radialGradient>
-        </defs>
-      </svg>
-
-      <p className="calc-peace__caption">
-        Solar on. Bills off. <em style={{ color: 'var(--leaf-deep)', fontStyle: 'italic' }}>Mind at peace.</em>
-      </p>
-    </div>
-  )
-}
-
 // ─── Rotating Hindi hook ─────────────────────────────────────────────────────
 type Hook = { hi: string; en: string }
 
@@ -486,12 +403,15 @@ function HindiHook({
   paybackYrs,
   stateName,
   lifetime,
+  trigger,
 }: {
   monthly: number
   kW: number
   paybackYrs: number
   stateName: string
   lifetime: number
+  /** Stringified signature of all user inputs — rotates the hook on any change */
+  trigger: string
 }) {
   const hooks = useMemo(
     () => getHooks(monthly, kW, paybackYrs, stateName, lifetime),
@@ -500,21 +420,21 @@ function HindiHook({
 
   const [idx, setIdx] = useState(0)
   // null on first render so we can establish the baseline without rotating
-  const lastMonthly = useRef<number | null>(null)
+  const lastTrigger = useRef<string | null>(null)
 
-  // Advance the hook ONLY when the headline monthly-savings value changes.
-  // No ambient timer — the hook stays put unless the user updates an input
-  // that actually moves their savings number.
+  // Advance the hook on every input change (slider, state, segment, tab).
+  // Tracking the raw input signature avoids the rounded-monthly false-stable
+  // problem where two slider positions resolve to the same ₹ amount.
   useEffect(() => {
-    if (lastMonthly.current === null) {
-      lastMonthly.current = monthly
+    if (lastTrigger.current === null) {
+      lastTrigger.current = trigger
       return
     }
-    if (monthly !== lastMonthly.current) {
-      lastMonthly.current = monthly
+    if (trigger !== lastTrigger.current) {
+      lastTrigger.current = trigger
       setIdx((i) => (i + 1) % hooks.length)
     }
-  }, [monthly, hooks.length])
+  }, [trigger, hooks.length])
 
   const hook = hooks[Math.min(idx, hooks.length - 1)]
 
@@ -590,6 +510,9 @@ export default function CalculatorPage() {
 
   // Advanced inputs
   const [advancedOpen, setAdvancedOpen] = useState(false)
+  // Wizard: which question is expanded (1, 2, 3 or null for all collapsed)
+  const [openStep, setOpenStep] = useState<1 | 2 | 3 | null>(1)
+  const toggleStep = (s: 1 | 2 | 3) => setOpenStep((cur) => (cur === s ? null : s))
   const [roofSqft, setRoofSqft] = useState(500)
   const [shading, setShading] = useState<Shading>('none')
   const [financing, setFinancing] = useState<Financing>('cash')
@@ -706,77 +629,97 @@ export default function CalculatorPage() {
                     />
                   </div>
 
-                  {/* Step 1: state */}
-                  <FriendlyLabel step="1">Where do you live?</FriendlyLabel>
-                  <div className="calc-select">
-                    <select
-                      value={stateCode}
-                      onChange={(e) => setStateCode(e.target.value)}
-                      aria-label="State"
-                    >
-                      {Object.entries(STATES)
-                        .sort(([, a], [, b]) => a.name.localeCompare(b.name))
-                        .map(([code, info]) => (
-                          <option key={code} value={code}>
-                            {info.name}
-                          </option>
-                        ))}
-                    </select>
-                    <svg className="calc-select__chevron" width="14" height="14" viewBox="0 0 14 14" aria-hidden fill="none">
-                      <path d="M3 5.5 L7 9.5 L11 5.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </div>
-                  <Hint>
-                    Average DISCOM tariff in {st.name}: ₹{st.tariff}/unit · sunlight {st.gh} kWh/m²/day
-                  </Hint>
+                  {/* Step 1: State */}
+                  <StepCard
+                    step={1}
+                    title="Where do you live?"
+                    summary={st.name}
+                    isOpen={openStep === 1}
+                    onToggle={() => toggleStep(1)}
+                  >
+                    <div className="calc-select">
+                      <select
+                        value={stateCode}
+                        onChange={(e) => setStateCode(e.target.value)}
+                        aria-label="State"
+                      >
+                        {Object.entries(STATES)
+                          .sort(([, a], [, b]) => a.name.localeCompare(b.name))
+                          .map(([code, info]) => (
+                            <option key={code} value={code}>
+                              {info.name}
+                            </option>
+                          ))}
+                      </select>
+                      <svg className="calc-select__chevron" width="14" height="14" viewBox="0 0 14 14" aria-hidden fill="none">
+                        <path d="M3 5.5 L7 9.5 L11 5.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </div>
+                    <Hint>
+                      ₹{st.tariff}/unit · sunlight {st.gh} kWh/m²/day
+                    </Hint>
+                  </StepCard>
 
-                  {/* Step 2: bill or units */}
-                  <FriendlyLabel step="2">What's your monthly electricity bill?</FriendlyLabel>
-                  <Tabs
-                    value={inputMode}
-                    onChange={(v) => setInputMode(v as InputMode)}
-                    options={[
-                      { value: 'bill', label: 'I know my bill (₹)' },
-                      { value: 'units', label: 'I know my units (kWh)' },
-                    ]}
-                  />
-
-                  {inputMode === 'bill' ? (
-                    <FriendlySlider
-                      display={fmtRupees(monthlyBill)}
-                      min={500}
-                      max={100000}
-                      step={250}
-                      value={monthlyBill}
-                      onChange={setMonthlyBill}
-                      bump={bump}
-                      leaf
+                  {/* Step 2: Monthly bill / units */}
+                  <StepCard
+                    step={2}
+                    title="What's your monthly bill?"
+                    summary={inputMode === 'bill' ? fmtRupees(monthlyBill) : `${monthlyUnits} units`}
+                    isOpen={openStep === 2}
+                    onToggle={() => toggleStep(2)}
+                  >
+                    <Tabs
+                      value={inputMode}
+                      onChange={(v) => setInputMode(v as InputMode)}
+                      options={[
+                        { value: 'bill', label: 'I know my bill (₹)' },
+                        { value: 'units', label: 'I know my units (kWh)' },
+                      ]}
                     />
-                  ) : (
-                    <FriendlySlider
-                      display={`${monthlyUnits} units`}
-                      min={50}
-                      max={5000}
-                      step={25}
-                      value={monthlyUnits}
-                      onChange={setMonthlyUnits}
-                      bump={bump}
-                      leaf
-                    />
-                  )}
 
-                  {/* Step 3: roof area — kept in the visible inputs because it
-                      meaningfully changes the recommended size and savings */}
-                  <FriendlyLabel step="3">How much rooftop space do you have?</FriendlyLabel>
-                  <FriendlySlider
-                    display={`${roofSqft.toLocaleString('en-IN')} sq ft`}
-                    min={100}
-                    max={10000}
-                    step={50}
-                    value={roofSqft}
-                    onChange={setRoofSqft}
-                    bump={bump}
-                  />
+                    {inputMode === 'bill' ? (
+                      <FriendlySlider
+                        display={fmtRupees(monthlyBill)}
+                        min={500}
+                        max={100000}
+                        step={250}
+                        value={monthlyBill}
+                        onChange={setMonthlyBill}
+                        bump={bump}
+                        leaf
+                      />
+                    ) : (
+                      <FriendlySlider
+                        display={`${monthlyUnits} units`}
+                        min={50}
+                        max={5000}
+                        step={25}
+                        value={monthlyUnits}
+                        onChange={setMonthlyUnits}
+                        bump={bump}
+                        leaf
+                      />
+                    )}
+                  </StepCard>
+
+                  {/* Step 3: Roof area */}
+                  <StepCard
+                    step={3}
+                    title="How much rooftop space?"
+                    summary={`${roofSqft.toLocaleString('en-IN')} sq ft`}
+                    isOpen={openStep === 3}
+                    onToggle={() => toggleStep(3)}
+                  >
+                    <FriendlySlider
+                      display={`${roofSqft.toLocaleString('en-IN')} sq ft`}
+                      min={100}
+                      max={10000}
+                      step={50}
+                      value={roofSqft}
+                      onChange={setRoofSqft}
+                      bump={bump}
+                    />
+                  </StepCard>
 
                   {/* Advanced toggle */}
                   <button
@@ -861,9 +804,8 @@ export default function CalculatorPage() {
                     paybackYrs={result.paybackYrs}
                     stateName={st.name}
                     lifetime={result.lifetimeSavings}
+                    trigger={`${stateCode}|${segment}|${inputMode}|${monthlyBill}|${monthlyUnits}|${roofSqft}|${shading}|${financing}`}
                   />
-
-                  <PeaceOfMind />
 
                   <div className="calc-mini-stats">
                     <div className="calc-mini-stat">
@@ -1197,6 +1139,37 @@ function FieldLabel({ children, inline }: { children: React.ReactNode; inline?: 
 
 function Hint({ children }: { children: React.ReactNode }) {
   return <p style={{ fontSize: 12, color: 'var(--ink-mute)', marginTop: 8, lineHeight: 1.5 }}>{children}</p>
+}
+
+// Accordion-style step card — one question expanded at a time
+function StepCard({
+  step,
+  title,
+  summary,
+  isOpen,
+  onToggle,
+  children,
+}: {
+  step: number
+  title: string
+  summary: string
+  isOpen: boolean
+  onToggle: () => void
+  children: React.ReactNode
+}) {
+  return (
+    <div className={`step-card${isOpen ? ' is-open' : ''}`}>
+      <button type="button" className="step-card__header" onClick={onToggle} aria-expanded={isOpen}>
+        <span className="step-card__num">{step}</span>
+        <span className="step-card__title">{title}</span>
+        {!isOpen && <span className="step-card__summary">{summary}</span>}
+        <svg className="step-card__chevron" width="14" height="14" viewBox="0 0 14 14" aria-hidden fill="none">
+          <path d="M3 5.5 L7 9.5 L11 5.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+      {isOpen && <div className="step-card__body">{children}</div>}
+    </div>
+  )
 }
 
 // iOS-style segmented tab control (pill track, floating active chip)
