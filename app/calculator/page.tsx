@@ -965,8 +965,8 @@ function CalculatorPage() {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: 'clamp(28px, 4vw, 56px)' }} className="max-md:grid-cols-1">
               {/* Cost breakdown card */}
-              <Reveal>
-                <div style={cardStyle}>
+              <Reveal style={{ height: '100%' }}>
+                <div style={{ ...cardStyle, height: '100%', boxSizing: 'border-box' }}>
                   <Eyebrow>Cost breakdown</Eyebrow>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginTop: 18 }}>
                     <Stat
@@ -1015,15 +1015,15 @@ function CalculatorPage() {
               </Reveal>
 
               {/* Sparkline */}
-              <Reveal delay={120}>
-                <div style={cardStyle}>
+              <Reveal delay={120} style={{ height: '100%' }}>
+                <div style={{ ...cardStyle, height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
                   <Eyebrow>Cumulative savings, year by year</Eyebrow>
                   <p style={{ marginTop: 12, marginBottom: 8, fontSize: 14, color: 'var(--ink-soft)' }}>
                     By year{' '}
                     <strong style={{ color: 'var(--leaf-deep)' }}>{Math.ceil(result.paybackYrs)}</strong>, the
                     system has paid for itself. After that, every rupee saved is profit.
                   </p>
-                  <svg className="calc-sparkline" viewBox={`0 0 ${sparkline.w} ${sparkline.h}`} preserveAspectRatio="none" key={`spark-${stateCode}-${monthlyBill}-${monthlyUnits}-${segment}`}>
+                  <svg className="calc-sparkline" style={{ flex: 1, height: 'auto', minHeight: 80 }} viewBox={`0 0 ${sparkline.w} ${sparkline.h}`} preserveAspectRatio="none" key={`spark-${stateCode}-${monthlyBill}-${monthlyUnits}-${segment}`}>
                     <defs>
                       <linearGradient id="calc-grad" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor="var(--leaf)" stopOpacity="0.45" />
@@ -1588,7 +1588,7 @@ function FriendlySlider({
 
 function Stat({ label, value, sub, accent }: { label: string; value: string; sub?: string; accent?: boolean }) {
   return (
-    <div style={{ padding: '18px 20px', background: 'var(--bg-warm)', borderRadius: 12, border: '1px solid var(--rule)' }}>
+    <div style={{ padding: '18px 20px', background: 'var(--bg-warm)', borderRadius: 12, border: '1px solid var(--rule)', height: '100%', boxSizing: 'border-box' }}>
       <p className="eyebrow" style={{ color: 'var(--ink-mute)', marginBottom: 8 }}>{label}</p>
       <p style={{ fontFamily: 'Newsreader', fontSize: 'clamp(20px, 2.2vw, 26px)', lineHeight: 1.1, color: accent ? 'var(--leaf-deep)' : 'var(--ink)' }}>
         {value}
