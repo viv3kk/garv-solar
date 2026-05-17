@@ -1,0 +1,107 @@
+.process-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.process-grid > :global(.reveal) {
+  border-top: 1px solid var(--rule);
+  border-left: 1px solid var(--rule);
+}
+
+.process-grid > :global(.reveal):nth-child(3n + 1) {
+  border-left: none;
+}
+
+.process-grid > :global(.reveal):nth-child(-n + 3) {
+  border-top: none;
+}
+
+.process-tile {
+  padding: clamp(24px, 3vw, 40px);
+  height: 100%;
+  background: var(--bg);
+  transition: background 0.25s ease;
+}
+
+.process-grid > :global(.reveal):hover .process-tile {
+  background: var(--bg-warm);
+}
+
+.process-tile__num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--ochre);
+  letter-spacing: 0.12em;
+}
+
+.process-tile__title {
+  font-family: 'Newsreader', serif;
+  font-size: 22px;
+  margin-top: 16px;
+  margin-bottom: 12px;
+}
+
+.process-tile__body {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+@media (max-width: 767px) {
+  .process-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .process-grid > :global(.reveal) {
+    border-top: 1px solid var(--rule);
+    border-left: 1px solid var(--rule);
+  }
+
+  .process-grid > :global(.reveal):nth-child(3n + 1) {
+    border-left: 1px solid var(--rule);
+  }
+
+  .process-grid > :global(.reveal):nth-child(odd) {
+    border-left: none;
+  }
+
+  .process-grid > :global(.reveal):nth-child(-n + 3) {
+    border-top: 1px solid var(--rule);
+  }
+
+  .process-grid > :global(.reveal):nth-child(-n + 2) {
+    border-top: none;
+  }
+
+  .process-tile {
+    padding: clamp(20px, 5vw, 28px);
+  }
+
+  .process-tile__title {
+    font-size: 18px;
+    margin-top: 12px;
+    margin-bottom: 10px;
+  }
+
+  .process-tile__body {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 420px) {
+  .process-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .process-grid > :global(.reveal) {
+    border-left: none !important;
+  }
+
+  .process-grid > :global(.reveal):not(:first-child) {
+    border-top: 1px solid var(--rule) !important;
+  }
+
+  .process-grid > :global(.reveal):first-child {
+    border-top: none !important;
+  }
+}
